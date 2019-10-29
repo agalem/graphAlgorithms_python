@@ -4,12 +4,7 @@ class Graph(object):
         self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
 
     def addEdge(self, v1, v2):
-        if not isinstance(v1, int) or not isinstance(v2, int):
-            print("Numery wierzchołków to liczby całkowite")
-            return
-        if v1 < 0 or v1 >= self.size or v2 < 0 or v2 >= self.size:
-            print("Podano nieprawiłowe wartości wierzchołków. Numery wierzchołków są w "
-                  "zakresie od 0 do %d" % (self.size - 1))
+        if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
             return
         if self.doesEdgeExist(v1, v2):
             print("Podana krawędź już istnieje")
