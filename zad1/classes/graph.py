@@ -62,9 +62,10 @@ class Graph(object):
         return degree
 
     def findMinGraphDegree(self):
+        '''
         vertexDegree = self.findVertexDegree(0)
         if vertexDegree == 0:
-            print("Minimalny stopień grafu: %d" % vertexDegree)
+           print("Minimalny stopień grafu: %d" % vertexDegree)
             return
         else:
             for vertexNum in range(1, self.size):
@@ -74,15 +75,20 @@ class Graph(object):
                     return vertexDegree
                 elif currentVertexDegree < vertexDegree:
                     vertexDegree = currentVertexDegree
+        '''
+        all_degrees = self.getAllDegrees()
+        vertexDegree = all_degrees[-1]
         print("Minimalny stopień grafu: %d" % vertexDegree)
         return vertexDegree
 
     def findMaxGraphDegree(self):
-        vertexDegree = self.findVertexDegree(0)
-        for vertexNum in range(1, self.size):
-            currentVertexDegree = self.findVertexDegree(vertexNum)
-            if currentVertexDegree > vertexDegree:
-                vertexDegree = currentVertexDegree
+        #vertexDegree = self.findVertexDegree(0)
+        #for vertexNum in range(1, self.size):
+        #    currentVertexDegree = self.findVertexDegree(vertexNum)
+        #    if currentVertexDegree > vertexDegree:
+        #        vertexDegree = currentVertexDegree
+        all_degrees = self.getAllDegrees()
+        vertexDegree = all_degrees[0]
         print("Maksymalny stopień grafu: %d" % vertexDegree)
         return vertexDegree
 
@@ -91,9 +97,9 @@ class Graph(object):
             even=0,
             odd=0
         )
-        for vertexNum in range(self.size):
-            vertexDegree = self.findVertexDegree(vertexNum)
-            if vertexDegree % 2 == 0:
+        all_degrees = self.getAllDegrees()
+        for degree in all_degrees:
+            if degree % 2 == 0:
                 degrees['even'] += 1
             else:
                 degrees['odd'] += 1
@@ -106,8 +112,21 @@ class Graph(object):
             vertexDegree = self.findVertexDegree(vertexNum)
             degrees.append(vertexDegree)
         degrees.sort(reverse=True)
-        print("Stopnie: ", degrees)
         return degrees
+
+    def printAllDegrees(self):
+        all_degrees = self.getAllDegrees()
+        print("Stopnie: ", all_degrees)
+
+    def getAllDegreesWithIndexes(self):
+        degrees_indexes = {}
+        for vertexNum in range(self.size):
+            vertexDegree = self.findVertexDegree(vertexNum)
+            degrees_indexes[vertexNum] = vertexDegree
+        return degrees_indexes
+
+    def getLastVertexIndex(self):
+        return self.size - 1
 
     def getAdjacencyMatrix(self):
         return self.adjMatrix

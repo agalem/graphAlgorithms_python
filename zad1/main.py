@@ -16,7 +16,7 @@ def main():
     g.addEdge(6, 8)
     g.addEdge(7, 8)
     g.toString()
-    g.getAllDegrees()
+    g.printAllDegrees()
     g.findMinGraphDegree()
     g.findMaxGraphDegree()
     g.findOddAndEvenVertexDegreesAmount()

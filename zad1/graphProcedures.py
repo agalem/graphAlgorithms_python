@@ -70,18 +70,36 @@ def checkGraphSeries(series):
 
 def buildGraphMatrix(history):
     graphSize = len(history[0])
+    historySize = len(history)
     graph = Graph(graphSize)
     matrix = graph.getAdjacencyMatrix()
+    degrees_indexes = graph.getAllDegreesWithIndexes()
+
+    for i in range(1, historySize):
+        connections_amount = history[i][0]
+        print("Ilość połączeń do dodania: ", connections_amount)
+        print("Historia: ", history[i])
+        graph.addVertex()
+        for j in range(1, connections_amount + 1):
+            searched_vertex_degree = history[i][j] - 1
+            print("Szukany stopień: ", searched_vertex_degree)
+            vertex_index = list(degrees_indexes.keys())[list(degrees_indexes.values()).index(searched_vertex_degree)]
+            last_vertex_index = graph.getLastVertexIndex()
+            graph.addEdge(vertex_index, last_vertex_index)
+            degrees_indexes = graph.getAllDegreesWithIndexes()
+
     print("\nMacierz sąsiedztwa:")
     for row in matrix:
         for value in row:
             print('{0:5}'.format(value), end=' ')
         print()
-    return
+    return graph.getAdjacencyMatrix()
 
 
 def modifyListElements(list, amount):
     for i in range(amount):
+        if int(list[i] <= 0):
+            continue
         list[i] = int(list[i] - 1)
     return list
 
@@ -128,7 +146,7 @@ def findc3CyclesByMultiplication(adjMatrix):
         repetitiveCyclesSum += resultMatrixThree[i][i] / 2
     result = repetitiveCyclesSum / 3.0
     print("Cykle z mnożenia macierzy: ", int(result))
-    print("\n\nMacierz sąsiedztwa:\n")
+    print("\n\nMacierz po mnożeniu dla cykli C3:\n")
     for row in resultMatrixThree:
         for value in row:
             print('{0:5}'.format(value), end=' ')
