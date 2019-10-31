@@ -1,3 +1,7 @@
+from classes.graph import Graph
+
+seriesHistory = []
+
 def findC3Cycles(adjMatrix):
     size = len(adjMatrix)
     visitedMatrix = [[0 for i in range(size)] for i in range(size)]
@@ -28,15 +32,58 @@ def hasC3Cycle(adjMatrix):
     print("Nie zawiera podgrafu izomorficznego do cyklu C3")
     return False
 
+
 def isGraphSeries(series):
     initialSum = sumListElements(series)
     if not isEven(initialSum):
         print("Nie jest ciągiem grafowym")
         return False
+    seriesHistory.append(series)
     return checkGraphSeries(series)
 
 def checkGraphSeries(series):
+    series.sort(reverse=True)
+    amountToDecrease = series[0]
+    seriesToCheck = series[1:]
+    if len(seriesToCheck) < amountToDecrease:
+        return False
+    else:
+        newSeries = modifyListElements(seriesToCheck, amountToDecrease)
+        sum = sumListElements(newSeries)
+        if sum % 2 != 0:
+            print("Nie jest to ciąg grafowy")
+            seriesHistory.clear()
+            return False
+        elif sum == 0:
+            seriesHistory.append(newSeries)
+            seriesHistory.reverse()
+            print("Historia: ", seriesHistory)
+            print("Jest to ciąg grafowy")
+            buildGraphMatrix(seriesHistory)
+            return True
+        else:
+            seriesHistory.append(newSeries)
+            checkGraphSeries(newSeries)
+    seriesHistory.clear()
+    return False
 
+
+def buildGraphMatrix(history):
+    graphSize = len(history[0])
+    graph = Graph(graphSize)
+    matrix = graph.getAdjacencyMatrix()
+    print("\nMacierz sąsiedztwa:")
+    for row in matrix:
+        for value in row:
+            print('{0:5}'.format(value), end=' ')
+        print()
+    return
+
+
+def modifyListElements(list, amount):
+    for i in range(amount):
+        list[i] = int(list[i] - 1)
+    return list
 
 
 def isEven(num):

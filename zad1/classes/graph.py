@@ -11,6 +11,7 @@ class Graph(object):
             return
         self.adjMatrix[v1][v2] = 1
         self.adjMatrix[v2][v1] = 1
+        return self.getAdjacencyMatrix()
 
     def removeEdge(self, v1, v2):
         if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
@@ -20,12 +21,14 @@ class Graph(object):
             return
         self.adjMatrix[v1][v2] = 0
         self.adjMatrix[v2][v1] = 0
+        return self.getAdjacencyMatrix()
 
     def addVertex(self):
         self.size += 1
         for row in self.adjMatrix:
             row.append(0)
         self.adjMatrix.append([0 for i in range(self.size)])
+        return self.getAdjacencyMatrix()
 
     def removeVertex(self, v):
         if self.isVertexInvalid(v):
@@ -34,6 +37,7 @@ class Graph(object):
         self.removeRowFromMatrix(v)
         self.removeColumnFromMatrix(v)
         self.size -= 1
+        return self.getAdjacencyMatrix()
 
     def removeEdgesAssociatedToVertex(self, v):
         for index in range(self.size):
@@ -67,11 +71,11 @@ class Graph(object):
                 currentVertexDegree = self.findVertexDegree(vertexNum)
                 if currentVertexDegree == 0:
                     print("Minimalny stopień grafu: %d" % vertexDegree)
-                    return
+                    return vertexDegree
                 elif currentVertexDegree < vertexDegree:
                     vertexDegree = currentVertexDegree
         print("Minimalny stopień grafu: %d" % vertexDegree)
-        return
+        return vertexDegree
 
     def findMaxGraphDegree(self):
         vertexDegree = self.findVertexDegree(0)
@@ -80,19 +84,21 @@ class Graph(object):
             if currentVertexDegree > vertexDegree:
                 vertexDegree = currentVertexDegree
         print("Maksymalny stopień grafu: %d" % vertexDegree)
-        return
+        return vertexDegree
 
     def findOddAndEvenVertexDegreesAmount(self):
-        even = 0
-        odd = 0
+        degrees = dict(
+            even=0,
+            odd=0
+        )
         for vertexNum in range(self.size):
             vertexDegree = self.findVertexDegree(vertexNum)
             if vertexDegree % 2 == 0:
-                even += 1
+                degrees['even'] += 1
             else:
-                odd += 1
-        print("Wierzchołki parzystego stopnia: %d, nieparzystego: %d" % (even, odd))
-        return
+                degrees['odd'] += 1
+        print("Wierzchołki parzystego stopnia: %d, nieparzystego: %d" % (degrees['even'], degrees['odd']))
+        return degrees
 
     def getAllDegrees(self):
         degrees = []
@@ -101,7 +107,7 @@ class Graph(object):
             degrees.append(vertexDegree)
         degrees.sort(reverse=True)
         print("Stopnie: ", degrees)
-        return
+        return degrees
 
     def getAdjacencyMatrix(self):
         return self.adjMatrix
@@ -127,3 +133,4 @@ class Graph(object):
                 print('{0:5}'.format(value), end=' ')
             print()
         print("Rozmiar macierzy: [ %d x %d ]\n" % (len(self.adjMatrix), len(self.adjMatrix[0])))
+        return

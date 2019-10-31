@@ -27,5 +27,6 @@ def main():
     hasC3CycleByMatrixMultipication(g.getAdjacencyMatrix())
     isGraphSeries([6, 5, 4, 3, 2, 2, 2, 2])
 
+
 if __name__ == '__main__':
     main()
