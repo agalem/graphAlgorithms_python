@@ -3,6 +3,10 @@ class Graph(object):
         self.size = size
         self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
 
+    def buildFromMatrix(self, matrix):
+        self.adjMatrix = matrix
+        return self.adjMatrix
+
     def addEdge(self, v1, v2):
         if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
             return
