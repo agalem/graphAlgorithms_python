@@ -2,37 +2,6 @@ from classes.graph import Graph
 
 seriesHistory = []
 
-def findC3Cycles(adjMatrix):
-    size = len(adjMatrix)
-    visitedMatrix = [[0 for i in range(size)] for i in range(size)]
-    cycles = 0
-    for rowNum in range(size):
-        for columnNum in range(size):
-            if rowNum == columnNum:
-                continue
-            elif adjMatrix[rowNum][columnNum] == 1 and visitedMatrix[rowNum][columnNum] == 0:
-                cyclePath = checkIfCycle(adjMatrix, rowNum, columnNum)
-                if len(cyclePath) == 3:
-                    cycles += 1
-                    visitedMatrix = modifyVisitedMatrix(visitedMatrix, cyclePath)
-    print("Cykle: ", cycles)
-    return
-
-def hasC3Cycle(adjMatrix):
-    size = len(adjMatrix)
-    for rowNum in range(size):
-        for colmnNum in range(size):
-            if rowNum == colmnNum:
-                continue
-            elif adjMatrix[rowNum][colmnNum] == 1:
-                cyclePath = checkIfCycle(adjMatrix, rowNum, colmnNum)
-                if len(cyclePath) == 3:
-                    print("Zawiera podgraf izomorficzny do cyklu C3")
-                    return True
-    print("Nie zawiera podgrafu izomorficznego do cyklu C3")
-    return False
-
-
 def isGraphSeries(series):
     initialSum = sumListElements(series)
     if not isEven(initialSum):
@@ -67,35 +36,6 @@ def checkGraphSeries(series):
     seriesHistory.clear()
     return False
 
-
-def buildGraphMatrix(history):
-    graphSize = len(history[0])
-    historySize = len(history)
-    graph = Graph(graphSize)
-    matrix = graph.getAdjacencyMatrix()
-    degrees_indexes = graph.getAllDegreesWithIndexes()
-
-    for i in range(1, historySize):
-        connections_amount = history[i][0]
-        print("Ilość połączeń do dodania: ", connections_amount)
-        print("Historia: ", history[i])
-        graph.addVertex()
-        for j in range(1, connections_amount + 1):
-            searched_vertex_degree = history[i][j] - 1
-            print("Szukany stopień: ", searched_vertex_degree)
-            vertex_index = list(degrees_indexes.keys())[list(degrees_indexes.values()).index(searched_vertex_degree)]
-            last_vertex_index = graph.getLastVertexIndex()
-            graph.addEdge(vertex_index, last_vertex_index)
-            degrees_indexes = graph.getAllDegreesWithIndexes()
-
-    print("\nMacierz sąsiedztwa:")
-    for row in matrix:
-        for value in row:
-            print('{0:5}'.format(value), end=' ')
-        print()
-    return graph.getAdjacencyMatrix()
-
-
 def modifyListElements(list, amount):
     for i in range(amount):
         if int(list[i] <= 0):
@@ -126,6 +66,63 @@ def sumListElementsMinusOne(list):
         else:
             sum += int(list[i] - 1)
     return sum
+
+def buildGraphMatrix(history):
+    graphSize = len(history[0])
+    historySize = len(history)
+    graph = Graph(graphSize)
+    matrix = graph.getAdjacencyMatrix()
+    degrees_indexes = graph.getAllDegreesWithIndexes()
+
+    for i in range(1, historySize):
+        connections_amount = history[i][0]
+        print("Ilość połączeń do dodania: ", connections_amount)
+        print("Historia: ", history[i])
+        graph.addVertex()
+        for j in range(1, connections_amount + 1):
+            searched_vertex_degree = history[i][j] - 1
+            print("Szukany stopień: ", searched_vertex_degree)
+            vertex_index = list(degrees_indexes.keys())[list(degrees_indexes.values()).index(searched_vertex_degree)]
+            last_vertex_index = graph.getLastVertexIndex()
+            graph.addEdge(vertex_index, last_vertex_index)
+            degrees_indexes = graph.getAllDegreesWithIndexes()
+
+    print("\nMacierz sąsiedztwa:")
+    for row in matrix:
+        for value in row:
+            print('{0:5}'.format(value), end=' ')
+        print()
+    return graph.getAdjacencyMatrix()
+
+def findC3Cycles(adjMatrix):
+    size = len(adjMatrix)
+    visitedMatrix = [[0 for i in range(size)] for i in range(size)]
+    cycles = 0
+    for rowNum in range(size):
+        for columnNum in range(size):
+            if rowNum == columnNum:
+                continue
+            elif adjMatrix[rowNum][columnNum] == 1 and visitedMatrix[rowNum][columnNum] == 0:
+                cyclePath = checkIfCycle(adjMatrix, rowNum, columnNum)
+                if len(cyclePath) == 3:
+                    cycles += 1
+                    visitedMatrix = modifyVisitedMatrix(visitedMatrix, cyclePath)
+    print("Cykle: ", cycles)
+    return
+
+def hasC3Cycle(adjMatrix):
+    size = len(adjMatrix)
+    for rowNum in range(size):
+        for colmnNum in range(size):
+            if rowNum == colmnNum:
+                continue
+            elif adjMatrix[rowNum][colmnNum] == 1:
+                cyclePath = checkIfCycle(adjMatrix, rowNum, colmnNum)
+                if len(cyclePath) == 3:
+                    print("Zawiera podgraf izomorficzny do cyklu C3")
+                    return True
+    print("Nie zawiera podgrafu izomorficznego do cyklu C3")
+    return False
 
 def hasC3CycleByMatrixMultipication(adjMatrix):
     resultMatrix = multiplyMatrixes(multiplyMatrixes(adjMatrix, adjMatrix), adjMatrix)
