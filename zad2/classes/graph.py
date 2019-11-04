@@ -1,3 +1,7 @@
+import pandas
+import numpy
+
+
 class Graph(object):
     def __init__(self, size):
         self.size = size
@@ -151,3 +155,14 @@ class Graph(object):
             print()
         print("Rozmiar macierzy: [ %d x %d ]\n" % (len(self.adjMatrix), len(self.adjMatrix[0])))
         return
+
+    # saves adjacency matrix to csv file
+    def writeToCsv(self):
+        dfStringList = []
+        for row in self.adjMatrix:
+            dfStringList.append(', '.join(map(str, row)))
+        dfString = '; '.join(map(str, dfStringList))
+        numpyMatrix = numpy.matrix(dfString)
+        dataframe = pandas.DataFrame(numpyMatrix)
+        print(dataframe)
+        dataframe.to_csv('./graph.csv')

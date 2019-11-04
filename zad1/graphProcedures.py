@@ -2,6 +2,7 @@ from classes.graph import Graph
 
 seriesHistory = []
 
+
 def isGraphSeries(series):
     initialSum = sumListElements(series)
     if not isEven(initialSum):
@@ -9,6 +10,7 @@ def isGraphSeries(series):
         return False
     seriesHistory.append(series)
     return checkGraphSeries(series)
+
 
 def checkGraphSeries(series):
     series.sort(reverse=True)
@@ -36,6 +38,7 @@ def checkGraphSeries(series):
     seriesHistory.clear()
     return False
 
+
 def modifyListElements(list, amount):
     for i in range(amount):
         if int(list[i] <= 0):
@@ -57,15 +60,6 @@ def sumListElements(list):
         sum += int(list[i])
     return sum
 
-def sumListElementsMinusOne(list):
-    size = len(list)
-    sum = 0
-    for i in range(size):
-        if int(list[i]) == 0:
-            continue
-        else:
-            sum += int(list[i] - 1)
-    return sum
 
 def buildGraphMatrix(history):
     graphSize = len(history[0])
@@ -82,8 +76,12 @@ def buildGraphMatrix(history):
         for j in range(1, connections_amount + 1):
             searched_vertex_degree = history[i][j] - 1
             print("Szukany stopień: ", searched_vertex_degree)
+
+            # get index of a first vertex of searched degree from a degrees_indexes dictionary
             vertex_index = list(degrees_indexes.keys())[list(degrees_indexes.values()).index(searched_vertex_degree)]
             last_vertex_index = graph.getLastVertexIndex()
+
+            # add an edge between found vertex of a given degree and the last vertex
             graph.addEdge(vertex_index, last_vertex_index)
             degrees_indexes = graph.getAllDegreesWithIndexes()
 
@@ -94,21 +92,6 @@ def buildGraphMatrix(history):
         print()
     return graph.getAdjacencyMatrix()
 
-def findC3Cycles(adjMatrix):
-    size = len(adjMatrix)
-    visitedMatrix = [[0 for i in range(size)] for i in range(size)]
-    cycles = 0
-    for rowNum in range(size):
-        for columnNum in range(size):
-            if rowNum == columnNum:
-                continue
-            elif adjMatrix[rowNum][columnNum] == 1 and visitedMatrix[rowNum][columnNum] == 0:
-                cyclePath = checkIfCycle(adjMatrix, rowNum, columnNum)
-                if len(cyclePath) == 3:
-                    cycles += 1
-                    visitedMatrix = modifyVisitedMatrix(visitedMatrix, cyclePath)
-    print("Cykle: ", cycles)
-    return
 
 def hasC3Cycle(adjMatrix):
     size = len(adjMatrix)
@@ -134,23 +117,8 @@ def hasC3CycleByMatrixMultipication(adjMatrix):
     print("Nie zawiera podgrafu izomorficznego do cyklu C3")
     return False
 
-def findc3CyclesByMultiplication(adjMatrix):
-    resultMatrix = multiplyMatrixes(adjMatrix, adjMatrix)
-    resultMatrixThree = multiplyMatrixes(resultMatrix, adjMatrix)
-    size = len(resultMatrixThree)
-    repetitiveCyclesSum = 0
-    for i in range(size):
-        repetitiveCyclesSum += resultMatrixThree[i][i] / 2
-    result = repetitiveCyclesSum / 3.0
-    print("Cykle z mnożenia macierzy: ", int(result))
-    print("\n\nMacierz po mnożeniu dla cykli C3:\n")
-    for row in resultMatrixThree:
-        for value in row:
-            print('{0:5}'.format(value), end=' ')
-        print()
-    print("Rozmiar macierzy: [ %d x %d ]\n" % (len(resultMatrixThree), len(resultMatrixThree[0])))
-    return
 
+# checks if there is a connection between second vertex and first vertex which comes through another vertex
 def checkIfCycle(adjMatrix, firstVertex, secondVertex):
     visited = [firstVertex, secondVertex]
     size = len(adjMatrix)
@@ -164,24 +132,34 @@ def checkIfCycle(adjMatrix, firstVertex, secondVertex):
                 return visited
     return visited
 
-def modifyVisitedMatrix(visitedMatrix, cyclePath):
-    #size = 3
-    #for i in range(size):
-    #    for j in range(size):
-    #       if i == j:
-    #           continue
-    #       else:
-    #           visitedMatrix[cyclePath[i]][cyclePath[j]] = 1
-    visitedMatrix[cyclePath[0]][cyclePath[1]] = 1
-    visitedMatrix[cyclePath[1]][cyclePath[0]] = 1
-    visitedMatrix[cyclePath[1]][cyclePath[2]] = 1
-    visitedMatrix[cyclePath[2]][cyclePath[1]] = 1
-    visitedMatrix[cyclePath[2]][cyclePath[0]] = 1
-    visitedMatrix[cyclePath[0]][cyclePath[2]] = 1
-    return visitedMatrix
 
 def multiplyMatrixes(mat1, mat2):
     zip_mat2 = zip(*mat2)
     zip_mat2 = list(zip_mat2)
     return [[sum(elem_a*elem_b for elem_a, elem_b in zip(row_a, col_b))
              for col_b in zip_mat2] for row_a in mat1]
+
+
+def buildGraphFromFile(path):
+    file = open(path, "r")
+    lines = [line.rstrip('\n') for line in file]
+    file.close()
+
+    graph_size = int(lines[0])
+    edges_size = int(lines[1])
+    edges = lines[2:]
+
+    if len(edges) != edges_size:
+        print("Podano niewłaściwą liczbę krawędzi - %d" % len(edges))
+        return
+
+    graph = Graph(graph_size)
+
+    for edge in edges:
+        edge = edge.split()
+        vertex_from = int(edge[0])
+        vertex_to = int(edge[1])
+        graph.addEdge(vertex_from, vertex_to)
+
+    print(graph.getAdjacencyMatrix())
+    return graph

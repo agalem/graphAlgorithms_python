@@ -29,6 +29,7 @@ def DFS(matrix, currentVertex, vertexes, searchedLength):
         if vertex_connections[i] == 1:
             print("Połączenia z: ", i)
             if i in vertexes:
+                # length of the found path is too short
                 if len(vertexes) - vertexes.index(i) <= searchedLength:
                     continue
                 else:
@@ -37,3 +38,51 @@ def DFS(matrix, currentVertex, vertexes, searchedLength):
             else:
                 return DFS(matrix, i, vertexes, searchedLength)
     return vertexes
+
+
+def findJordanCenter(matrix):
+    tree_size = len(matrix)
+    tree = Graph(tree_size)
+    tree.buildFromMatrix(matrix)
+    vertexes = [i for i in range(tree_size)]
+
+    vertexes_left_size = len(vertexes)
+    # max length of the center is 2
+    while vertexes_left_size > 2:
+        for vertex in list(vertexes):
+            degree = tree.findVertexDegree(vertex)
+            print("Wierzchołek: ", vertex, "  Stopien: ", degree)
+            if degree == 1:
+                print("Liśc: ", vertex)
+                tree.removeEdgesAssociatedToVertex(vertex)
+                # removing leaves
+                vertexes.remove(vertex)
+        vertexes_left_size = len(vertexes)
+
+    print("Centrum Jordana: ", vertexes)
+    return vertexes
+
+
+def buildGraphFromFile(path):
+    file = open(path, "r")
+    lines = [line.rstrip('\n') for line in file]
+    file.close()
+
+    graph_size = int(lines[0])
+    edges_size = int(lines[1])
+    edges = lines[2:]
+
+    if len(edges) != edges_size:
+        print("Podano niewłaściwą liczbę krawędzi - %d" % len(edges))
+        return
+
+    graph = Graph(graph_size)
+
+    for edge in edges:
+        edge = edge.split()
+        vertex_from = int(edge[0])
+        vertex_to = int(edge[1])
+        graph.addEdge(vertex_from, vertex_to)
+
+    print(graph.getAdjacencyMatrix())
+    return graph
