@@ -7,7 +7,7 @@ def main():
     g.toString()
 
     searchCycle(g.getAdjacencyMatrix())
-    #findJordanCenter(g.getAdjacencyMatrix())
+    findJordanCenter(g.getAdjacencyMatrix())
 
 
 

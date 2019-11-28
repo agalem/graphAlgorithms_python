@@ -25,23 +25,34 @@ def DFS(matrix, currentVertex, vertexes, searchedLength):
 
     vertex_connections = matrix[currentVertex]
     for i in range(len(vertex_connections)):
-        print(vertex_connections)
+        #print(vertex_connections)
         if vertex_connections[i] == 1:
             print("Połączenia z: ", i)
             if i in vertexes:
                 # length of the found path is too short
-                if len(vertexes) - vertexes.index(i) <= searchedLength:
+                continue
+                '''if len(vertexes) - vertexes.index(i) <= searchedLength:
                     continue
                 else:
                     vertexes = vertexes[vertexes.index(i):]
-                    return vertexes
+                    return vertexes'''
             else:
                 return DFS(matrix, i, vertexes, searchedLength)
     return vertexes
 
 
 def findJordanCenter(matrix):
+
+    if not isTree(matrix):
+        print("Nie jest to drzewo")
+        return
+
     tree_size = len(matrix)
+
+    if tree_size < 3:
+        vertexes = [i for i in range(tree_size)]
+        return vertexes
+
     tree = Graph(tree_size)
     tree.buildFromMatrix(matrix)
     vertexes = [i for i in range(tree_size)]
@@ -61,6 +72,32 @@ def findJordanCenter(matrix):
 
     print("Centrum Jordana: ", vertexes)
     return vertexes
+
+
+def isTree(matrix):
+    size = len(matrix)
+    edges = 0
+    for i in range(size):
+        vertex_row = matrix[i]
+        vertex_edges = 0
+
+        for j in range(size):
+            if vertex_row[j] == 1:
+                if i == j:
+                    return False
+                else:
+                    vertex_edges = vertex_edges + 1
+
+        if vertex_edges == 0:
+            return False
+
+        edges = edges + vertex_edges
+
+    edges = int(edges / 2)
+
+    if edges == size - 1:
+        return True
+    return False
 
 
 def buildGraphFromFile(path):

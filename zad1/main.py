@@ -3,6 +3,8 @@ from graphProcedures import *
 
 def main():
     g = buildGraphFromFile('input.txt')
+    g.addVertex()
+    g.removeVertex(3)
     g.toString()
     g.printAllDegrees()
     g.findMinGraphDegree()
@@ -13,7 +15,7 @@ def main():
 
     hasC3Cycle(g.getAdjacencyMatrix())
     hasC3CycleByMatrixMultipication(g.getAdjacencyMatrix())
-    isGraphSeries([7, 6, 5, 4, 4, 3, 2, 1])
+    isGraphSeries([4,4,4,4])
 
 
 if __name__ == '__main__':

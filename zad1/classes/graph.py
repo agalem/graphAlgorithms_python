@@ -7,6 +7,38 @@ class Graph(object):
         self.size = size
         self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
 
+    def buildFromMatrix(self, matrix):
+        self.adjMatrix = matrix
+        if not self.isSimpleGraph:
+            print("Podany graf nie jest grafem prostym")
+            return
+        elif not self.isSymetric:
+            print("Podany graf nie jest grafem nieskierowanym")
+            return
+        return self
+
+    def isSimpleGraph(self):
+        for i in range(self.size):
+            vertex_edges = 0
+            vertex_row = self.adjMatrix[i]
+            for j in range(self.size):
+                if vertex_row[j] == 1:
+                    if i == j:
+                        return False
+                    vertex_edges = vertex_edges + 1
+            if vertex_edges == 0:
+                return False
+        return True
+
+    def isSymetric(self):
+        for i in range(self.size):
+            for j in range(self.size):
+                if i == j:
+                    continue
+                elif self.adjMatrix[i][j] != self.adjMatrix[j][i]:
+                    return False
+        return True
+
     def addEdge(self, v1, v2):
         if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
             return
