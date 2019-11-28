@@ -14,8 +14,15 @@ class Stack:
     def pop(self):
         return self.items.pop()
 
+    def remove(self, element):
+        self.items.remove(element)
+        return element
+
     def get_items(self):
         return self.items
+
+    def get_size(self):
+        return len(self.items)
 
     def last_element(self):
         return self.items[-1]

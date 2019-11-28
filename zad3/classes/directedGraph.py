@@ -1,7 +1,7 @@
 class DirectedGraph:
     def __init__(self, size):
         self.size = size
-        self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
+        self.adjMatrix = [[0]*size for i in range(size)]
 
 
     def buildFromMatrix(self, matrix):
@@ -90,6 +90,16 @@ class DirectedGraph:
                     degree += 1
         return degree
 
+
+    def getTransposition(self):
+        size = self.size
+        adjMatrix = self.getAdjacencyMatrix()
+
+        matrix_tr = [[0]*size for i in range(size)]
+        for i in range(size):
+            for j in range(size):
+                matrix_tr[j][i] = adjMatrix[i][j]
+        return matrix_tr
 
     def getAdjacencyMatrix(self):
         return self.adjMatrix

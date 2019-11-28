@@ -163,10 +163,10 @@ def is_connected(graph):
     print("\nComponents: ", components, "\nComponents amount: ", components_amount)
 
     if components_amount > 1:
-        print("Graf nie jest spójny")
+        print("Graf nie jest spójny\n")
         output = False
     else:
-        print("Graf jest spójny")
+        print("Graf jest spójny\n")
         output = True
 
     return output
@@ -177,6 +177,7 @@ def dfs_components(current_vertex, matrix, stack, visited, visited_bool):
     connections = matrix[current_vertex - 1]
 
     if not visited_bool[current_vertex - 1]:
+        print("Odwiedzenie ", current_vertex, ", odwiedzone: ", visited)
         visited_bool[current_vertex - 1] = True
         visited.append(current_vertex)
         stack.push(current_vertex)
@@ -187,7 +188,6 @@ def dfs_components(current_vertex, matrix, stack, visited, visited_bool):
     stack.pop()
 
     if stack.is_empty():
-        print("\n\nOdwiedzone: ", visited_bool)
         return visited
 
     return dfs_components(stack.last_element(), matrix, stack, visited, visited_bool)
@@ -255,3 +255,62 @@ def kruskal(wgraph):
 
     return
 
+
+def kosaraju(dirgraph):
+
+    size = dirgraph.getSize()
+    matrix = dirgraph.getAdjacencyMatrix()
+
+    stack_dfs = Stack()
+    visited = [False for i in range(size)]
+    stack_post_order = Stack()
+    components = []
+
+    post_order = dfs_kosaraju(3, matrix, stack_dfs, stack_post_order, visited, size)
+    print("Post order: ", post_order.get_items())
+
+    transposition_matrix = dirgraph.getTransposition()
+    visited_bool = [False for i in range(size)]
+
+    while not post_order.is_empty():
+        vertex = post_order.pop()
+        print("Vertex",vertex)
+        if visited_bool[vertex - 1]:
+            continue
+        else:
+            visited = dfs_components(vertex, transposition_matrix, stack_dfs, [], visited_bool)
+            if len(visited) > 1:
+                to_add = [vertex]
+                for elem in reversed(post_order.get_items()):
+                    if elem in visited:
+                        post_order.remove(elem)
+                        to_add.append(elem)
+                components.append(to_add)
+            else:
+                components.append([vertex])
+
+    print(components)
+
+    return components
+
+
+def dfs_kosaraju(current_vertex, matrix, stack_dfs, stack_post_order, visited, size):
+
+    connections = matrix[current_vertex - 1]
+
+    if not visited[current_vertex - 1]:
+        visited[current_vertex - 1] = True
+        stack_dfs.push(current_vertex)
+
+    for i in range(len(connections)):
+        if i != current_vertex - 1 and connections[i] == 1 and not visited[i]:
+            return dfs_kosaraju(i + 1, matrix, stack_dfs, stack_post_order, visited, size)
+    stack_post_order.push(stack_dfs.pop())
+
+    if stack_dfs.is_empty():
+        if current_vertex > 1:
+            return dfs_kosaraju(current_vertex - 1, matrix, stack_dfs, stack_post_order, visited, size)
+
+        return stack_post_order
+
+    return dfs_kosaraju(stack_dfs.last_element(), matrix, stack_dfs, stack_post_order, visited, size)

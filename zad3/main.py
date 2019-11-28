@@ -10,8 +10,8 @@ def main():
     wg.getEdgesByWeightsAsc()
     kruskal(wg)
 
-    dg = build_directed_graph_from_file("input.txt")
-
+    dg = build_directed_graph_from_file("input3.txt")
+    kosaraju(dg)
 
     return
 
