@@ -3,7 +3,6 @@ from classes.stack import Stack
 from classes.weightedGraph import WeightedGraph
 from classes.directedGraph import DirectedGraph
 
-
 def build_directed_graph_from_file(path):
     file = open(path, "r")
     lines = [line.rstrip('\n') for line in file]
@@ -95,7 +94,7 @@ def build_graph_from_file(path):
 def spanning_tree_dfs(graph, starting_vertex=1):
 
     if not is_connected(graph):
-        print("Graf nie jest spojny")
+        print("Graf nie jest spójny")
         return
 
     size = graph.getSize()
@@ -177,7 +176,7 @@ def dfs_components(current_vertex, matrix, stack, visited, visited_bool):
     connections = matrix[current_vertex - 1]
 
     if not visited_bool[current_vertex - 1]:
-        print("Odwiedzenie ", current_vertex, ", odwiedzone: ", visited)
+        #print("Odwiedzenie ", current_vertex, ", odwiedzone: ", visited)
         visited_bool[current_vertex - 1] = True
         visited.append(current_vertex)
         stack.push(current_vertex)
@@ -196,10 +195,11 @@ def dfs_components(current_vertex, matrix, stack, visited, visited_bool):
 def kruskal(wgraph):
 
     if not is_connected(wgraph):
-        print("Graf nie jest spojny")
+        print("Graf nie jest spójny")
         return
 
     edges_weighted_asc = wgraph.getEdgesByWeightsAsc()
+    print("Krawędzie wagami rosnąco: ", edges_weighted_asc)
     size = wgraph.getSize()
 
     copy_edges_weighted_asc = [row[:] for row in edges_weighted_asc]
@@ -256,29 +256,30 @@ def kruskal(wgraph):
     return
 
 
-def kosaraju(dirgraph):
+def kosaraju(digraph):
 
-    size = dirgraph.getSize()
-    matrix = dirgraph.getAdjacencyMatrix()
+    size = digraph.getSize()
+    matrix = digraph.getAdjacencyMatrix()
 
     stack_dfs = Stack()
     visited = [False for i in range(size)]
     stack_post_order = Stack()
     components = []
 
-    post_order = dfs_kosaraju(3, matrix, stack_dfs, stack_post_order, visited, size)
+    post_order = dfs_post_order(3, matrix, stack_dfs, stack_post_order, visited, size)
     print("Post order: ", post_order.get_items())
 
-    transposition_matrix = dirgraph.getTransposition()
+    transposition_matrix = digraph.getTransposition()
     visited_bool = [False for i in range(size)]
 
     while not post_order.is_empty():
         vertex = post_order.pop()
-        print("Vertex",vertex)
+        print("Vertex", vertex)
         if visited_bool[vertex - 1]:
             continue
         else:
             visited = dfs_components(vertex, transposition_matrix, stack_dfs, [], visited_bool)
+            print("Odwiedzone: ", visited)
             if len(visited) > 1:
                 to_add = [vertex]
                 for elem in reversed(post_order.get_items()):
@@ -289,12 +290,12 @@ def kosaraju(dirgraph):
             else:
                 components.append([vertex])
 
-    print(components)
+    print("Silnie składowe: ", components)
 
     return components
 
 
-def dfs_kosaraju(current_vertex, matrix, stack_dfs, stack_post_order, visited, size):
+def dfs_post_order(current_vertex, matrix, stack_dfs, stack_post_order, visited, size):
 
     connections = matrix[current_vertex - 1]
 
@@ -304,13 +305,157 @@ def dfs_kosaraju(current_vertex, matrix, stack_dfs, stack_post_order, visited, s
 
     for i in range(len(connections)):
         if i != current_vertex - 1 and connections[i] == 1 and not visited[i]:
-            return dfs_kosaraju(i + 1, matrix, stack_dfs, stack_post_order, visited, size)
-    stack_post_order.push(stack_dfs.pop())
+            return dfs_post_order(i + 1, matrix, stack_dfs, stack_post_order, visited, size)
+    if not stack_dfs.is_empty():
+        stack_post_order.push(stack_dfs.pop())
 
     if stack_dfs.is_empty():
         if current_vertex > 1:
-            return dfs_kosaraju(current_vertex - 1, matrix, stack_dfs, stack_post_order, visited, size)
+            return dfs_post_order(current_vertex - 1, matrix, stack_dfs, stack_post_order, visited, size)
 
         return stack_post_order
 
-    return dfs_kosaraju(stack_dfs.last_element(), matrix, stack_dfs, stack_post_order, visited, size)
+    return dfs_post_order(stack_dfs.last_element(), matrix, stack_dfs, stack_post_order, visited, size)
+
+
+def djikstra_tree(digraph, starting_vertex):
+
+    if not is_connected(digraph):
+        print("Graf nie jest spojny")
+        return
+
+    size = digraph.getSize()
+    matrix = digraph.getAdjacencyMatrix()
+
+    if has_negative_weights(matrix):
+        print("Graf zawiera ujemne funkcje wagowe")
+        return
+
+    vertexes = [i + 1 for i in range(size)]
+    tree = []
+
+    distances = [[float("inf") for i in range(len(matrix))]]
+    distances[0][starting_vertex - 1] = 0
+
+    djikstra(vertexes, distances, matrix, tree)
+
+    print("Drzewo najkrotszych sciezek: ", tree)
+    return tree
+
+
+def djikstra(vertexes, distances, matrix, tree):
+
+    while len(vertexes) > 0:
+
+        if len(distances) > 0:
+            distances.append(list(distances[-1]))
+
+        min_distance = float("inf")
+        min_distance_vertex = 0
+
+        #znajdz wierzcholek o najmniejszej wartosci z tablicy odleglosci
+        for vertex in vertexes:
+            if vertexes == min_distance_vertex:
+                continue
+            if distances[-1][vertex - 1] < min_distance:
+                min_distance = distances[-1][vertex - 1]
+                min_distance_vertex = vertex
+
+        #usun znaleziony wierzcholek z tablicy wierzcholkow nieodwiedzonych
+        vertexes.remove(min_distance_vertex)
+
+        for vertex in vertexes:
+            #gdy odleglosc nie jest policzona(nieskonczonosc) i istnieje polaczenie pomiędzy wierzcholkiem o najmniejszej wartosci a sprawdzanym
+            if distances[-1][vertex - 1] == float("inf") and matrix[min_distance_vertex - 1][vertex - 1] != 0:
+                #odleglosc do wierzcholka o najmniejszej wartości jest już policzona
+                if distances[-1][min_distance_vertex - 1] != float("inf"):
+                    distances[-1][vertex - 1] = distances[-1][min_distance_vertex - 1] + matrix[min_distance_vertex - 1][vertex - 1]
+                else:
+                    distances[-1][vertex - 1] = matrix[min_distance_vertex - 1][vertex - 1]
+
+                tree.append([min_distance_vertex, vertex])
+
+            else:
+                #istnieje polaczenie pomiędzy wierzcholkiem o najmniejszej wartosci a sprawdzanym
+                if matrix[min_distance_vertex - 1][vertex - 1] != 0:
+                    current_distance = distances[-1][vertex - 1]
+                    new_distance = distances[-1][min_distance_vertex - 1] + matrix[min_distance_vertex - 1][vertex - 1]
+
+                    #usuniecie zbednej krawedzi z drzewa odleglosci
+                    #krawedz do usuniecia -> gdy istnieje krawędz prowadzaca do sprawdzanego wierzcholka (vertex) już dodana do drzewa
+                    if current_distance > new_distance:
+                        previous_edges_second_elements = [edge[1] for edge in tree]
+                        if vertex in previous_edges_second_elements:
+                            index = previous_edges_second_elements.index(vertex)
+                            tree.pop(index)
+
+                        tree.append([min_distance_vertex, vertex])
+
+                    distances[-1][vertex - 1] = min(current_distance, new_distance)
+
+
+    print("Odległości: ")
+    for row in distances:
+        print(row)
+
+    return tree
+
+
+def has_negative_weights(matrix):
+    for row in matrix:
+        for elem in row:
+            if elem < 0:
+                return True
+    return False
+
+
+# def djikstra2(current_vertex, value_to_add, matrix, tree, distances, vertexes, starting_vertex):
+#
+#     if current_vertex not in vertexes:
+#         print("Wierzchołek jest już sprawdzony")
+#         return
+#
+#     if len(distances) >= 1:
+#         distances.append(list(distances[-1]))
+#
+#     vertexes.remove(current_vertex)
+#
+#     connections = matrix[current_vertex - 1]
+#     min_distance = float("inf")
+#     min_distance_vertex = 0
+#
+#     for i in range(len(connections)):
+#         if i == current_vertex - 1 or i == starting_vertex - 1:
+#             continue
+#         if connections[i] != 0:
+#             current_distance = distances[-1][i]
+#             distance_to_vertex = connections[i] + value_to_add
+#
+#             # update wierzchołka jeżeli dana trasa jest krotsza i dodanie krawędzi do drzewa (oraz usunięcie wcześniejszej)
+#             if current_distance > distance_to_vertex:
+#                 distances[-1][i] = distance_to_vertex
+#
+#                 previous_edges_second_elements = [edge[1] for edge in tree]
+#
+#                 if i + 1 in previous_edges_second_elements:
+#                     index = previous_edges_second_elements.index(i + 1)
+#                     tree.pop(index)
+#
+#                 tree.append([current_vertex, i + 1])
+#
+#                 print("Vertex from ", current_vertex, " Vertex to: ", i+1, " Current, ", current_distance, ", new distance: ", distance_to_vertex)
+#
+#     # wybierz wierzchołek o najmniejszej odległości
+#     for elem in vertexes:
+#         if distances[-1][elem - 1] < min_distance:
+#             min_distance = distances[-1][elem - 1]
+#             min_distance_vertex = elem
+#
+#     if len(vertexes) > 0:
+#         return djikstra(min_distance_vertex, min_distance, matrix, tree, distances, vertexes, starting_vertex)
+#
+#     print(vertexes)
+#     print(distances)
+#     print(tree)
+#
+#     return distances
