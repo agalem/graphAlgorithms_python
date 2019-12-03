@@ -71,6 +71,9 @@ class Graph(object):
     def getSize(self):
         return self.size
 
+    def getType(self):
+        return "graph"
+
     def isVertexInvalid(self, v):
         if not isinstance(v, int):
             print("Numery wierzchołków to liczby całkowite")

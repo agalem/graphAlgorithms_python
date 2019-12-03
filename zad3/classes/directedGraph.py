@@ -109,6 +109,9 @@ class DirectedGraph:
         return self.size
 
 
+    def getType(self):
+        return "directed graph"
+
     def isVertexInvalid(self, v):
         if not isinstance(v, int):
             print("Numery wierzchołków to liczby całkowite")

@@ -88,6 +88,9 @@ class WeightedGraph:
     def getSize(self):
         return self.size
 
+    def getType(self):
+        return "weighted graph"
+
     def isVertexInvalid(self, v):
         if not isinstance(v, int):
             print("Numery wierzchołków to liczby całkowite")
