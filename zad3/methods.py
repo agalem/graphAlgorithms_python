@@ -2,6 +2,7 @@ from classes.graph import Graph
 from classes.stack import Stack
 from classes.weightedGraph import WeightedGraph
 from classes.directedGraph import DirectedGraph
+from classes.weightedDigraph import WeightedDigraph
 
 def build_directed_graph_from_file(path):
     file = open(path, "r")
@@ -30,6 +31,36 @@ def build_directed_graph_from_file(path):
 
     directed_graph.toString()
     return directed_graph
+
+
+def build_weighted_digraph_from_file(path):
+    file = open(path, "r")
+    lines = [line.rstrip('\n') for line in file]
+    file.close()
+
+    graph_size = int(lines[0])
+    edges_size = int(lines[1])
+    edges = lines[2:]
+
+    if len(edges) != edges_size:
+        print("Podano niewłaściwą liczbę krawędzi - %d" % len(edges))
+        return
+
+    weighted_digraph = WeightedDigraph(graph_size)
+
+    for edge in edges:
+        edge = edge.split()
+        if len(edge) != 3:
+            print("\n\nNie utworzono grafu z wagami krawędzi")
+            print("Nieprawidłowa linijka: ", edge)
+            return
+        vertex_from = int(edge[0]) - 1
+        vertex_to = int(edge[1]) - 1
+        vertex_weight = int(edge[2])
+        weighted_digraph.addEdge(vertex_from, vertex_to, vertex_weight)
+
+    weighted_digraph.toString()
+    return weighted_digraph
 
 
 def build_weighted_graph_from_file(path):
@@ -91,7 +122,7 @@ def build_graph_from_file(path):
     return graph
 
 
-def spanning_tree_dfs(graph, starting_vertex=1):
+def spanning_tree(graph, starting_vertex=1):
 
     if graph.getType() != 'graph':
         print("Niewłaściwy graf")
@@ -268,6 +299,10 @@ def kruskal(wgraph):
 
 def kosaraju(digraph):
 
+    if digraph.getType() != "directed graph":
+        print('Niewłaściwy graf, powinien być graf skierowany')
+        return
+
     size = digraph.getSize()
     matrix = digraph.getAdjacencyMatrix()
 
@@ -283,11 +318,14 @@ def kosaraju(digraph):
     visited_bool = [False for i in range(size)]
 
     while not post_order.is_empty():
+        #usuń wierzchołek z post order
         vertex = post_order.pop()
         print("Vertex", vertex)
+        #kontynuuj gdy już odwiedzony
         if visited_bool[vertex - 1]:
             continue
         else:
+            #sprawdź do ilu wierzchołków można od niego dojść w grafie transponowanym
             visited = dfs_components(vertex, transposition_matrix, stack_dfs, [], visited_bool)
             print("Odwiedzone: ", visited)
             if len(visited) > 1:
@@ -328,7 +366,7 @@ def dfs_post_order(current_vertex, matrix, stack_dfs, stack_post_order, visited,
     return dfs_post_order(stack_dfs.last_element(), matrix, stack_dfs, stack_post_order, visited, size)
 
 
-def djikstra_tree(digraph, starting_vertex):
+def djikstra_tree(digraph, starting_vertex=1):
 
     if not is_connected(digraph):
         print("Graf nie jest spojny")
@@ -337,15 +375,23 @@ def djikstra_tree(digraph, starting_vertex):
     size = digraph.getSize()
     matrix = digraph.getAdjacencyMatrix()
 
+    if digraph.getType() != 'weighted digraph':
+        print('Niewłaściwy graf, powinien być graf skierowany')
+        return
+
     if has_negative_weights(matrix):
         print("Graf zawiera ujemne funkcje wagowe")
         return
+
 
     vertexes = [i + 1 for i in range(size)]
     tree = []
 
     distances = [[float("inf") for i in range(len(matrix))]]
     distances[0][starting_vertex - 1] = 0
+
+    print(distances)
+    print(vertexes)
 
     djikstra(vertexes, distances, matrix, tree)
 
@@ -361,15 +407,15 @@ def djikstra(vertexes, distances, matrix, tree):
             distances.append(list(distances[-1]))
 
         min_distance = float("inf")
-        min_distance_vertex = 0
 
         #znajdz wierzcholek o najmniejszej wartosci z tablicy odleglosci
         for vertex in vertexes:
-            if vertexes == min_distance_vertex:
-                continue
             if distances[-1][vertex - 1] < min_distance:
                 min_distance = distances[-1][vertex - 1]
                 min_distance_vertex = vertex
+
+        if min_distance_vertex not in vertexes:
+            return tree
 
         #usun znaleziony wierzcholek z tablicy wierzcholkow nieodwiedzonych
         vertexes.remove(min_distance_vertex)

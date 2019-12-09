@@ -4,16 +4,16 @@ def main():
     g = build_graph_from_file('input.txt')
 
     print("Drzewo spinające dfs")
-    spanning_tree_dfs(g)
+    spanning_tree(g)
 
     print("Czy spójny")
     #is_connected(g)
 
-    wg = build_weighted_graph_from_file('input4.txt')
+    wg = build_weighted_digraph_from_file('input4.txt')
     #wg.getEdgesByWeightsAsc()
 
     print("Kruskal")
-    kruskal(wg)
+    #kruskal(wg)
 
     dg = build_directed_graph_from_file("input3.txt")
 
@@ -21,7 +21,7 @@ def main():
     kosaraju(dg)
 
 
-    djikstra_tree(wg, 1)
+    djikstra_tree(wg, 3)
 
     return
 
