@@ -267,7 +267,6 @@ def BFS_maximum_flow(matrix, s, t, parent):
 def analyze_graph(graph):
 
     matrix = graph.getAdjacencyMatrix()
-    initial_matrix = [list(row) for row in matrix]
     size = graph.getSize()
 
     sources = find_source(matrix, size)
@@ -356,7 +355,6 @@ def analyze_graph(graph):
     max_flow = 0
     min_cuts = []
     augmenting_paths = []
-    sum_from_min_cuts = 0
 
     while BFS_augmenting_path(matrix, source, sink, parents, vertex_mark):
 
@@ -373,17 +371,18 @@ def analyze_graph(graph):
             ver_parent = parents[vertex]
             matrix[ver_parent][vertex] -= path_flow
             path.append(vertex + 1)
-
-            # minimalny przekrój
-            if matrix[ver_parent][vertex] == 0:
-                sum_from_min_cuts += initial_matrix[ver_parent][vertex]
-                if sum_from_min_cuts <= max_flow:
-                    min_cuts.append([ver_parent + 1, vertex + 1])
-
-            # wierzchołek staje się swoim rodzicem dla następnej iteracji
             vertex = parents[vertex]
 
         path.append(source)
+
+        # minimalny przekrój
+        for i in range(len(path) - 1):
+            next_vertex = path[i] - 1
+            previous_vertex = path[i + 1] - 1
+            if matrix[previous_vertex][next_vertex] == 0:
+                min_cuts.append([previous_vertex + 1, next_vertex + 1])
+                break
+
         augmenting_paths.append(path[::-1])
 
         vertex_mark = [0 for i in range(size)]
