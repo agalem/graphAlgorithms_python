@@ -309,9 +309,6 @@ def analyze_graph(graph):
         for row in graph.getAdjacencyMatrix():
             print(row)
 
-        matrix = graph.getAdjacencyMatrix()
-        size = graph.getSize()
-
     # sieć ma kilka źródeł
     if len(sources) > 1:
         print("Sieć ma kilka źródeł: ", sources)
@@ -346,7 +343,10 @@ def analyze_graph(graph):
     else:
         sink = sinks[0]
 
-    print("Source: ", source, ", Sink: ", sink)
+    matrix = graph.getAdjacencyMatrix()
+    size = graph.getSize()
+
+    print("źródło: ", source, ", ujście: ", sink)
 
     parents = [-1 for i in range(size)]
     vertex_mark = [0 for i in range(size)]
@@ -358,14 +358,15 @@ def analyze_graph(graph):
 
     while BFS_augmenting_path(matrix, source, sink, parents, vertex_mark):
 
+        print("Rodzice: ", parents)
+        print("Cechowanie: ", vertex_mark)
+
         path_flow = vertex_mark[sink - 1]
         max_flow += path_flow
 
-        vertex = sink - 1
         path = []
 
-        print(vertex_mark)
-
+        vertex = sink - 1
         # odtwarzanie ścieżki powiększającej
         while vertex != source - 1:
             ver_parent = parents[vertex]
@@ -377,10 +378,10 @@ def analyze_graph(graph):
 
         # minimalny przekrój
         for i in range(len(path) - 1):
-            next_vertex = path[i] - 1
+            current_vertex = path[i] - 1
             previous_vertex = path[i + 1] - 1
-            if matrix[previous_vertex][next_vertex] == 0:
-                min_cuts.append([previous_vertex + 1, next_vertex + 1])
+            if matrix[previous_vertex][current_vertex] == 0:
+                min_cuts.append([previous_vertex + 1, current_vertex + 1])
                 break
 
         augmenting_paths.append(path[::-1])
