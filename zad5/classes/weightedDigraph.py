@@ -2,6 +2,22 @@ class WeightedDigraph:
     def __init__(self, size):
         self.size = size
         self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
+        self.vertexes_left = []
+        self.vertexes_right = []
+
+    def add_vertexes_left(self, vertexes_list):
+        self.vertexes_left = vertexes_list
+        return
+
+    def add_vertexes_right(self, vertexes_list):
+        self.vertexes_right = vertexes_list
+        return
+
+    def get_vertexes_left(self):
+        return self.vertexes_left
+
+    def get_vertexes_right(self):
+        return self.vertexes_right
 
     def buildFromMatrix(self, matrix):
         self.adjMatrix = matrix

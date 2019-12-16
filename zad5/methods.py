@@ -31,6 +31,54 @@ def build_graph_from_file(path):
     return graph
 
 
+def build_bipartite_graph_from_file(path):
+    file = open(path, "r")
+    lines = [line.rstrip('\n') for line in file]
+    file.close()
+
+    graph_size = int(lines[0])
+    edges_size = int(lines[1])
+    edges = lines[2:]
+    vertexes_left = []
+    vertexes_right = []
+
+    if len(edges) != edges_size:
+        print("Podano niewłaściwą liczbę krawędzi - %d" % len(edges))
+        return
+
+    graph = WeightedDigraph(graph_size)
+
+    # dodaj źródło
+    graph.addVertex()
+    source_index = graph_size
+
+    #dodaj ujście
+    graph.addVertex()
+    sink_index = graph_size + 1
+
+    for edge in edges:
+        edge = edge.split()
+        if len(edge) != 2:
+            print("\n\nNie utworzono grafu")
+            print("Nieprawidłowa linijka: ", edge)
+            return
+        vertex_from = int(edge[0]) - 1
+        if vertex_from not in vertexes_left:
+            vertexes_left.append(vertex_from)
+        graph.addEdge(source_index, vertex_from, 1)
+
+        vertex_to = int(edge[1]) - 1
+        if vertex_to not in vertexes_right:
+            vertexes_right.append(vertex_to)
+        graph.addEdge(vertex_from, vertex_to, 1)
+        graph.addEdge(vertex_to, sink_index, 1)
+
+    graph.add_vertexes_left(vertexes_left)
+    graph.add_vertexes_right(vertexes_right)
+
+    graph.toString()
+    return graph
+
 def is_connected(graph):
     size = graph.getSize()
     matrix = graph.getAdjacencyMatrix()
@@ -81,35 +129,32 @@ def dfs_components(current_vertex, matrix, stack, visited, visited_bool):
     return dfs_components(stack.last_element(), matrix, stack, visited, visited_bool)
 
 
-def bfs_color(matrix, colors, vertex=0):
-    size = len(matrix)
-    visited = [False for i in range(size)]
-    queue = [vertex]
-    visited[vertex] = True
-    colors[vertex] = True
+def is_bipartite(matrix, size, colored_verticles):
+    colors = [0 for i in range(size)]
+    queue = []
 
-    while queue:
-        vertex = queue.pop(0)
-        # print(vertex + 1, end=" ")
-
-        # sprawdzanie sąsiadów
-        for index, value in enumerate(matrix[vertex]):
-            if not visited[index] and value > 0:
-                # sąsiad ma ten sam kolor
-                if colors[vertex] == colors[index]:
-                    print("Nie jest dwudzielny")
-                    return False
-                # wierzchołek już pokolorowany
-                if colors[index] != -1:
-                    continue
-                # pokolorowanie wierzchołka przeciwnym kolorem
-                colors[index] = not colors[vertex]
-                queue.append(index)
-                visited[index] = True
-
+    for vertex in range(size):
+        if colors[vertex] != 0:
+            continue
+        colors[vertex] = 1
+        queue.append(vertex)
+        while queue:
+            queue_vertex = queue.pop(0)
+            connections = matrix[queue_vertex]
+            for index, value in enumerate(connections):
+                if value == 1:
+                    if colors[index] != 0:
+                        continue
+                    if colors[index] == colors[queue_vertex]:
+                        print("Index; ", index, " Vertex: ", queue_vertex)
+                        print("Nie jest dwudzielny")
+                        colored_verticles.append(colors)
+                        return False
+                    colors[index] = colors[queue_vertex] * -1
+                    queue.append(index)
     print("Jest dwudzielny")
+    colored_verticles.append(colors)
     return True
-
 
 def build_bipartite_graph(matrix, size, vertexes_left, vertexes_right):
     # modyfikacja grafu na podstawie kolorowania
@@ -123,54 +168,148 @@ def build_bipartite_graph(matrix, size, vertexes_left, vertexes_right):
     # łączenie wierzchołków
     for vertex in vertexes_left:
         directed_graph.addEdge(source_index, vertex - 1, 1)
+        print("Dodawanie krawędzi ", source_index + 1, vertex)
         vertex_connections = matrix[vertex - 1]
         for index, value in enumerate(vertex_connections):
             if value != 0:
                 directed_graph.addEdge(vertex - 1, index, 1)
+                print("Dodawanie krawędzi ", vertex, index + 1)
     for vertex in vertexes_right:
         directed_graph.addEdge(vertex - 1, sink_index, 1)
+        print("Dodawanie krawędzi ", vertex, sink_index + 1)
 
     return directed_graph
 
 
 def max_match(graph):
-    if not is_connected(graph):
-        print("Podany graf nie jest spójny")
-        return
 
-    matrix = graph.getAdjacencyMatrix()
-    size = graph.getSize()
-    colors = [-1 for i in range(size)]
+    if graph.getType() == "graph":
+        if not is_connected(graph):
+            print("Podany graf nie jest spójny")
+            return
 
-    bfs_color(matrix, colors)
-    print(colors)
+        matrix = graph.getAdjacencyMatrix()
+        size = graph.getSize()
 
-    vertexes_left = []
-    vertexes_right = []
-    for index, value in enumerate(colors):
-        if value:
-            vertexes_left.append(index + 1)
-        else:
-            vertexes_right.append(index + 1)
-    print("Wierzchołki z lewej: ", vertexes_left)
-    print("Wierzchołki z prawej: ", vertexes_right)
+        colors = []
+        #kolorowanie
+        if not is_bipartite(matrix, size, colors):
+            colors = colors[0]
+            print(colors)
+            return
 
-    directed_graph = build_bipartite_graph(matrix, size, vertexes_left, vertexes_right)
-    dir_matrix = directed_graph.getAdjacencyMatrix()
-    dir_size = directed_graph.getSize()
+        colors = colors[0]
+        print(colors)
 
-    assigned = [-1 for i in range(dir_size)]
-    count = 0
+        vertexes_left = []
+        vertexes_right = []
+        for index, value in enumerate(colors):
+            if value == 1:
+                vertexes_left.append(index + 1)
+            else:
+                vertexes_right.append(index + 1)
+        print("\nWierzchołki z lewej: ", vertexes_left)
+        print("Wierzchołki z prawej: ", vertexes_right)
+        print()
 
-    for vertex in vertexes_left:
-        vertex -= 1
-        visited = [False for i in range(dir_size)]
-        if find_matching(matrix, vertex, visited, assigned):
-            count += 1
-    print(count)
-    return
+        directed_graph = build_bipartite_graph(matrix, size, vertexes_left, vertexes_right)
+        dir_matrix = directed_graph.getAdjacencyMatrix()
+        dir_size = directed_graph.getSize()
+    else:
+        directed_graph = graph
+        dir_matrix = directed_graph.getAdjacencyMatrix()
+        dir_size = directed_graph.getSize()
+        vertexes_right = directed_graph.get_vertexes_right()
+        vertexes_left = directed_graph.get_vertexes_left()
 
-# TODO użyć metody największego przepływu
+    # assigned = [-1 for i in range(dir_size)]
+    # count = 0
+
+    # for vertex in vertexes_left:
+    #     vertex -= 1
+    #     visited = [False for i in range(dir_size)]
+    #     if find_matching(matrix, vertex, visited, assigned):
+    #         count += 1
+    # print(count)
+
+    for row in dir_matrix:
+        print(row)
+
+    source = dir_size - 1
+    sink = dir_size
+    parents = [-1 for i in range(dir_size)]
+    max_flow = 0
+    max_matching = [-1 for i in range(dir_size)]
+
+    while BFS_maximum_flow(dir_matrix, source, sink, parents):
+        min_path_flow = float("Inf")
+
+        # szukamy minimalną wartość w ścieżce przepływu
+        vertex = sink - 1
+        while vertex != source - 1:
+            min_path_flow = min(min_path_flow, dir_matrix[parents[vertex]][vertex])
+            vertex = parents[vertex]
+
+        max_flow += min_path_flow
+
+        # zmianiamy wartości w macierzy sąsiedztwa
+        vertex = sink - 1
+        while vertex != source - 1:
+            ver_parent = parents[vertex]
+            # zapisywanie skojarzeń
+            max_matching[vertex] = ver_parent
+            dir_matrix[ver_parent][vertex] -= min_path_flow
+            dir_matrix[vertex][ver_parent] += min_path_flow
+            vertex = parents[vertex]
+
+        print("Parents: ", parents)
+        print("Max matching list: ", max_matching)
+
+    print("Maksymalny przepływ: ", max_flow)
+
+
+    max_matching_edges = []
+    for vertex in vertexes_right:
+        vertex_from = max_matching[vertex - 1] + 1
+        if vertex_from not in vertexes_left:
+            continue
+        vertex_to = vertex
+        max_matching_edges.append([vertex_from, vertex_to])
+
+    sorted_max_matching_edges = sorted(max_matching_edges, key = lambda x: x[0])
+
+    print("\n")
+    print("Maksymalne skojarzenie: ", sorted_max_matching_edges)
+
+    return sorted_max_matching_edges
+
+
+def BFS_maximum_flow(matrix, s, t, parent):
+    size = len(matrix)
+    visited = [False for i in range(size)]
+
+    source = s - 1
+    sink = t - 1
+
+    queue = [source]
+    visited[source] = True
+
+    print("\nPrzejście BFS:")
+
+    while queue:
+        vertex = queue.pop(0)
+
+        for index, value in enumerate(matrix[vertex]):
+            if not visited[index] and value > 0:
+                queue.append(index)
+                visited[index] = True
+                parent[index] = vertex
+                print("Rodzic: ", vertex, " Wierzchołek: ", index)
+                if visited[sink]:
+                    return True
+
+    return False
+
 
 
 def find_matching(matrix, v, visited, assigned):
