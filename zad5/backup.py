@@ -228,7 +228,16 @@ def find_max_match(graph):
         vertexes_right = directed_graph.get_vertexes_right()
         vertexes_left = directed_graph.get_vertexes_left()
 
-    print("Utworzona macierz: ")
+    # assigned = [-1 for i in range(dir_size)]
+    # count = 0
+
+    # for vertex in vertexes_left:
+    #     vertex -= 1
+    #     visited = [False for i in range(dir_size)]
+    #     if find_matching(matrix, vertex, visited, assigned):
+    #         count += 1
+    # print(count)
+
     for row in dir_matrix:
         print(row)
 
@@ -305,4 +314,18 @@ def BFS_maximum_flow(matrix, s, t, parent):
                 if visited[sink]:
                     return True
 
+    return False
+
+
+
+def find_matching(matrix, v, visited, assigned):
+    connections = matrix[v]
+    for index, value in enumerate(connections):
+        if value == 1 and not visited[index]:
+            visited[index] = True
+            if assigned[index] == -1 or find_matching(matrix, assigned[index], visited, assigned):
+                assigned[index] = v
+                print("Przypisania:\n", assigned)
+                print([v, index], "\n")
+                return True
     return False
