@@ -189,10 +189,6 @@ def find_max_match(graph):
     # wprowadzenie zwykłego grafu
     if graph.getType() == "graph":
 
-        if not is_connected(graph):
-            print("Podany graf nie jest spójny")
-            return
-
         matrix = graph.getAdjacencyMatrix()
         size = graph.getSize()
 
@@ -276,7 +272,7 @@ def find_max_match(graph):
     sorted_max_matching_edges = sorted(max_matching_edges, key = lambda x: x[0])
 
     print("\n")
-    print("Maksymalne skojarzenie: ", sorted_max_matching_edges)
+    print("Maksymalne skojarzenie: ")
 
     return sorted_max_matching_edges
 
