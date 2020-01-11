@@ -32,7 +32,7 @@ class Multigraph:
         if self.is_vertex_invalid(v1) or self.is_vertex_invalid(v2):
             return
         if not self.does_edge_exist(v1, v2):
-            print("Podana krawędź nie istnieje")
+            print("Podana krawędź nie istnieje ", v1, v2)
             return
         self.adj_list[v1].remove(v2)
         return
@@ -47,19 +47,21 @@ class Multigraph:
         return
 
     def remove_vertex(self, v):
+        print("Przekazany wierzchołek: ", v)
+        vertex_index = self.vertexes_numbers.index(v)
         if self.is_vertex_invalid(v):
             return
-        if not self.does_vertex_exist(v):
+        if not self.does_vertex_exist(vertex_index):
             return
-        self.remove_edges_associated_to_vertex(v)
-        del self.adj_list[v]
+        self.remove_edges_associated_to_vertex(vertex_index)
+        del self.adj_list[vertex_index]
         self.vertexes_numbers.remove(v)
         self.last_vertex_removed = v
         return
 
     def remove_edges_associated_to_vertex(self, v):
         for value in list(self.adj_list[v]):
-            self.remove_one_edge(value, v)
+            self.remove_one_edge(self.vertexes_numbers.index(value), v)
 
     def all_vertexes_even_degree(self):
         for i in range(self.size):
@@ -87,7 +89,7 @@ class Multigraph:
         return False
 
     def does_edge_exist(self, v1, v2):
-        print("v1:, ", v1, " Lista: ", self.adj_list[v1])
+        # print("v1: ", v1,", v2:  ", v2, " Lista: ", self.adj_list[v1])
         if v2 in self.adj_list[v1]:
             return True
         return False

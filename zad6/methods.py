@@ -34,6 +34,7 @@ def build_graph_from_file(path):
 def is_connected(graph):
     adj_list = graph.get_adjacency_list()
     size = len(adj_list)
+    vertexes_list = graph.get_vertexes_list()
 
     stack = Stack()
     visited_bool = [False for i in range(size)]
@@ -41,11 +42,15 @@ def is_connected(graph):
     components_amount = 0
 
     for vertex in range(size):
-        if visited_bool[vertex]:
+        if vertex in vertexes_list:
+            vertex_index = vertexes_list.index(vertex)
+        else:
+            continue
+        if visited_bool[vertex_index]:
             continue
         else:
             visited = []
-            visited = dfs_components(vertex + 1, adj_list, stack, visited, visited_bool)
+            visited = dfs_components(vertex + 1, adj_list, stack, visited, visited_bool, vertexes_list)
             components.append(visited)
             components_amount += 1
 
@@ -61,24 +66,29 @@ def is_connected(graph):
     return output
 
 
-def dfs_components(current_vertex, adj_list, stack, visited, visited_bool):
-    connections = adj_list[current_vertex - 1]
+def dfs_components(current_vertex, adj_list, stack, visited, visited_bool, vertexes_list):
+    vertex_index = vertexes_list.index(current_vertex - 1)
+    connections = adj_list[vertex_index]
 
-    if not visited_bool[current_vertex - 1]:
+    if not visited_bool[vertex_index]:
         # print("Odwiedzenie ", current_vertex, ", odwiedzone: ", visited)
-        visited_bool[current_vertex - 1] = True
+        visited_bool[vertex_index] = True
         visited.append(current_vertex)
         stack.push(current_vertex)
 
     for i in connections:
-        if i != current_vertex - 1 and not visited_bool[i]:
-            return dfs_components(i + 1, adj_list, stack, visited, visited_bool)
+        if i in vertexes_list:
+            connection_index = vertexes_list.index(i)
+        else:
+            continue
+        if i != current_vertex - 1 and not visited_bool[connection_index]:
+            return dfs_components(i + 1, adj_list, stack, visited, visited_bool, vertexes_list)
     stack.pop()
 
     if stack.is_empty():
         return visited
 
-    return dfs_components(stack.last_element(), adj_list, stack, visited, visited_bool)
+    return dfs_components(stack.last_element(), adj_list, stack, visited, visited_bool, vertexes_list)
 
 
 def euler_cycle(graph, initial_vertex=1):
@@ -96,45 +106,63 @@ def euler_cycle(graph, initial_vertex=1):
     print_list(copy_graph)
     answer = []
     fleury(initial_vertex, copy_graph, answer)
-
+    fleury(1, copy_graph, answer)
+    fleury(1, copy_graph, answer)
+    fleury(2, copy_graph, answer)
+    fleury(3, copy_graph, answer)
+    fleury(4, copy_graph, answer)
+    fleury(5, copy_graph, answer)
+    fleury(3, copy_graph, answer)
+    print(answer)
     return
-
 
 def fleury(current_vertex, graph, answer):
     adj_list = graph.get_adjacency_list()
-    connections = adj_list[current_vertex]
-    vertex_degree = get_vertex_degree(current_vertex, connections)
+    vertexes_list = graph.get_vertexes_list()
+    current_vertex_index = vertexes_list.index(current_vertex)
+
+    connections = adj_list[current_vertex_index]
+    vertex_degree = get_vertex_degree(current_vertex_index, connections)
     print(vertex_degree)
 
-    print("Aktualny wierzchołek: ", current_vertex + 1)
+    print("Aktualny wierzchołek: ", current_vertex, " Indeks aktualnego wierzchołka: ", current_vertex_index)
+    print_list(graph)
 
-    if vertex_degree > 0:
-        # dodanie pętli do odpowiedzi i usunięcie z
-        if is_loop(current_vertex, connections):
-            answer.append([current_vertex + 1, current_vertex + 1])
-            graph.remove_edge(current_vertex, current_vertex)
-            return fleury(current_vertex, graph, answer)
+    if is_loop(current_vertex_index, connections):
+        print("Posiada pętlę")
+        graph.remove_one_edge(current_vertex_index, current_vertex)
+        print_list(graph)
+        answer.append([current_vertex + 1, current_vertex + 1])
+        return
 
-        elif get_vertex_degree(current_vertex, connections) == 1:
-            connection = connections[0]
-            answer.append([current_vertex + 1, connection + 1])
-            print('current_vertex: ',current_vertex)
-            graph.remove_vertex(current_vertex)
-            # TODO błąd w tym miejscu
-            return fleury(connection, graph, answer)
+    if vertex_degree > 1 and not is_loop(current_vertex_index, connections):
+        print("Wielu sąsiadow, brak petli")
+        for value in connections:
+            if value in vertexes_list:
+                value_index = vertexes_list.index(value)
+            else:
+                continue
+            new_copy_graph = copy.deepcopy(graph)
+            new_copy_graph.remove_one_edge(current_vertex_index, value)
+            new_copy_graph.remove_one_edge(value_index, current_vertex)
 
-        else:
-            for value in connections:
-                print("Current ", current_vertex)
+            if is_connected(new_copy_graph):
+                print("Znaleziono krawędz ", current_vertex, ", ", value)
+                answer.append([current_vertex + 1, value + 1])
+                graph.remove_one_edge(current_vertex_index, value)
+                graph.remove_one_edge(value_index, current_vertex)
+                print_list(graph)
+                return
 
-                new_graph_copy = copy.copy(graph)
-                new_graph_copy.remove_edge(current_vertex, value)
+    if vertex_degree == 1:
+        connection = connections[0]
+        answer.append([current_vertex + 1, connection + 1])
+        vertexes_list = graph.get_vertexes_list()
+        print(vertexes_list)
+        print(current_vertex_index)
 
-                if is_connected(new_graph_copy):
-                    answer.append([current_vertex + 1, value + 1])
-                    graph.remove_edge(current_vertex, value)
-                    print_list(graph)
-                    return fleury(value, graph, answer)
+        graph.remove_vertex(current_vertex)
+        print_list(graph)
         return
 
     print(answer)
