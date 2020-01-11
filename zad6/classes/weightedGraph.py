@@ -43,14 +43,15 @@ class WeightedGraph:
         return
 
     def removeVertex(self, v):
-        if self.isVertexInvalid(v):
+        vertex_index = self.vertexes_nums.index(v)
+        if self.isVertexInvalid(vertex_index):
             return
         # self.removeEdgesAssociatedToVertex(v)
         # self.removeRowFromMatrix(v)
         # self.removeColumnFromMatrix(v)
         # self.size -= 1
         # self.vertexes_nums.remove(v)
-        vertex_index = self.vertexes_nums.index(v)
+
         self.removeEdgesAssociatedToVertex(vertex_index)
         self.removeRowFromMatrix(vertex_index)
         self.removeColumnFromMatrix(vertex_index)

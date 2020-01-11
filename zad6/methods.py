@@ -96,11 +96,6 @@ def euler_cycle(graph, initial_vertex=1):
     answer = []
 
     fleury(0, matrix, graph, answer)
-    fleury(1, matrix, graph, answer)
-    fleury(3, matrix, graph, answer)
-    fleury(3, matrix, graph, answer)
-    fleury(4, matrix, graph, answer)
-
 
     print(answer)
     return
@@ -120,31 +115,44 @@ def fleury(current_vertex, matrix, graph, answer):
 
     vertex_degree = get_vertex_degree(vertex_index, vertex_connections)
     print("vertex_degree: ", vertex_degree)
+    print()
 
-    if is_loop(vertex_index, vertex_connections):
-        answer.append([current_vertex, current_vertex])
-        graph.removeEdge(vertex_index, vertex_index)
-        print("Pętla")
-        print_matrix(graph)
+    if vertex_degree > 0:
 
-    elif vertex_degree == 1:
-        for index, value in enumerate(vertex_connections):
-            if value == 1:
-                connection = index
-                answer.append([current_vertex, connection])
-        graph.removeVertex(current_vertex)
+        if is_loop(vertex_index, vertex_connections):
+            answer.append([current_vertex, current_vertex])
+            graph.removeEdge(vertex_index, vertex_index)
+            print("Pętla")
+            print_matrix(graph)
+            return fleury(current_vertex, matrix, graph, answer)
 
-    else:
-        for index, value in enumerate(vertex_connections):
-            if value == 1:
-                neighbour = index
-                copy_graph = copy.deepcopy(graph)
-                copy_graph.removeEdge(vertex_index, neighbour)
-                print("Usuwanie ", current_vertex, neighbour)
-                if is_connected(copy_graph):
-                    answer.append([current_vertex, neighbour])
-                    graph.removeEdge(vertex_index, neighbour)
-                    break
+        elif vertex_degree == 1:
+            connection = None
+            for index, value in enumerate(vertex_connections):
+                if value == 1:
+                    connection = vertexes_list[index]
+                    print("Index usuwanego: ", index, " z listy: ", connection)
+                    answer.append([current_vertex, connection])
+            print("Usuwanie wierzchołka ", current_vertex)
+            graph.removeVertex(current_vertex)
+            if connection is not None:
+                print("Przekazywana wartość: ", connection)
+                return fleury(connection, matrix, graph, answer)
+            else:
+                print("Błąd -> brak połączeń od wierzchołka ", current_vertex + 1)
+                return
+
+        else:
+            for index, value in enumerate(vertex_connections):
+                if value == 1:
+                    neighbour = index
+                    copy_graph = copy.deepcopy(graph)
+                    copy_graph.removeEdge(vertex_index, vertexes_list[neighbour])
+                    print("Usuwanie ", current_vertex, vertexes_list[neighbour])
+                    if is_connected(copy_graph):
+                        answer.append([current_vertex, vertexes_list[neighbour]])
+                        graph.removeEdge(vertex_index, vertexes_list[neighbour])
+                        return fleury(vertexes_list[neighbour], matrix, graph, answer)
 
     return answer
 

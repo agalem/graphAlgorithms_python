@@ -1,7 +1,7 @@
 from methods import *
 
 def main():
-    graph = build_graph_from_file("input2.txt")
+    graph = build_graph_from_file("input.txt")
     is_connected(graph)
     euler_cycle(graph)
 
