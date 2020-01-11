@@ -2,20 +2,24 @@ class WeightedGraph:
     def __init__(self, size):
         self.size = size
         self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
+        self.vertexes_nums = [i for i in range(size)]
 
     def buildFromMatrix(self, matrix):
         self.adjMatrix = matrix
         return self
 
-    def addEdge(self, v1, v2, weight):
+    def addEdge(self, v1, v2):
         if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
             return
         if self.doesEdgeExist(v1, v2):
             print("Podana krawędź już istnieje")
             return
-        self.adjMatrix[v1][v2] = weight
-        self.adjMatrix[v2][v1] = weight
-        return self.getAdjacencyMatrix()
+        if v1 == v2:
+            self.adjMatrix[v1][v2] = 1
+            return
+        self.adjMatrix[v1][v2] += 1
+        self.adjMatrix[v2][v1] += 1
+        return
 
     def removeEdge(self, v1, v2):
         if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
@@ -23,42 +27,36 @@ class WeightedGraph:
         if not self.doesEdgeExist(v1, v2):
             print("Podana krawędź nie istnieje")
             return
-        self.adjMatrix[v1][v2] = 0
-        self.adjMatrix[v2][v1] = 0
-        return self.getAdjacencyMatrix()
-
-    def getEdgesByWeightsAsc(self):
-        matrix_copy = [row[:] for row in self.adjMatrix]
-        edgesList = []
-
-        for i in range(self.size):
-            vertex_connections = matrix_copy[i]
-            for j in range(self.size):
-                weight = vertex_connections[j]
-                if weight != 0:
-                    edgesList.append([i + 1, j + 1, weight])
-                    matrix_copy[i][j] = 0
-                    matrix_copy[j][i] = 0
-
-        sorted_edgesList = sorted(edgesList, key=lambda x: x[2])
-
-        return sorted_edgesList
+        if v1 == v2:
+            self.adjMatrix[v1][v2] = 0
+            return
+        self.adjMatrix[v1][v2] -= 1
+        self.adjMatrix[v2][v1] -= 1
+        return
 
     def addVertex(self):
         self.size += 1
         for row in self.adjMatrix:
             row.append(0)
         self.adjMatrix.append([0 for i in range(self.size)])
-        return self.getAdjacencyMatrix()
+        self.vertexes_nums.append(self.vertexes_nums[-1] + 1)
+        return
 
     def removeVertex(self, v):
         if self.isVertexInvalid(v):
             return
-        self.removeEdgesAssociatedToVertex(v)
-        self.removeRowFromMatrix(v)
-        self.removeColumnFromMatrix(v)
+        # self.removeEdgesAssociatedToVertex(v)
+        # self.removeRowFromMatrix(v)
+        # self.removeColumnFromMatrix(v)
+        # self.size -= 1
+        # self.vertexes_nums.remove(v)
+        vertex_index = self.vertexes_nums.index(v)
+        self.removeEdgesAssociatedToVertex(vertex_index)
+        self.removeRowFromMatrix(vertex_index)
+        self.removeColumnFromMatrix(vertex_index)
         self.size -= 1
-        return self.getAdjacencyMatrix()
+        self.vertexes_nums.remove(v)
+        return
 
     def removeEdgesAssociatedToVertex(self, v):
         for index in range(self.size):
@@ -82,11 +80,21 @@ class WeightedGraph:
                     degree += 1
         return degree
 
+    def areAllVertexesEvenDegree(self):
+        for vertex in range(self.size):
+            degree = self.findVertexDegree(vertex)
+            if degree % 2 != 0:
+                return False
+        return True
+
     def getAdjacencyMatrix(self):
         return self.adjMatrix
 
     def getSize(self):
         return self.size
+
+    def getVertexesList(self):
+        return self.vertexes_nums
 
     def getType(self):
         return "weighted graph"

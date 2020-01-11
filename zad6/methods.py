@@ -1,6 +1,7 @@
 import copy
 from classes.stack import Stack
 from classes.multigraph import Multigraph
+from classes.weightedGraph import WeightedGraph
 
 def build_graph_from_file(path):
     file = open(path, "r")
@@ -15,7 +16,7 @@ def build_graph_from_file(path):
         print("Podano niewłaściwą liczbę krawędzi - %d" % len(edges))
         return
 
-    graph = Multigraph(graph_size)
+    graph = WeightedGraph(graph_size)
 
     for edge in edges:
         edge = edge.split()
@@ -25,16 +26,15 @@ def build_graph_from_file(path):
             return
         vertex_from = int(edge[0]) - 1
         vertex_to = int(edge[1]) - 1
-        graph.add_edge(vertex_from, vertex_to)
+        graph.addEdge(vertex_from, vertex_to)
 
     graph.toString()
     return graph
 
 
 def is_connected(graph):
-    adj_list = graph.get_adjacency_list()
-    size = len(adj_list)
-    vertexes_list = graph.get_vertexes_list()
+    size = graph.getSize()
+    matrix = graph.getAdjacencyMatrix()
 
     stack = Stack()
     visited_bool = [False for i in range(size)]
@@ -42,15 +42,11 @@ def is_connected(graph):
     components_amount = 0
 
     for vertex in range(size):
-        if vertex in vertexes_list:
-            vertex_index = vertexes_list.index(vertex)
-        else:
-            continue
-        if visited_bool[vertex_index]:
+        if visited_bool[vertex]:
             continue
         else:
             visited = []
-            visited = dfs_components(vertex + 1, adj_list, stack, visited, visited_bool, vertexes_list)
+            visited = dfs_components(vertex + 1, matrix, stack, visited, visited_bool)
             components.append(visited)
             components_amount += 1
 
@@ -66,134 +62,117 @@ def is_connected(graph):
     return output
 
 
-def dfs_components(current_vertex, adj_list, stack, visited, visited_bool, vertexes_list):
-    vertex_index = vertexes_list.index(current_vertex - 1)
-    connections = adj_list[vertex_index]
+def dfs_components(current_vertex, matrix, stack, visited, visited_bool):
+    connections = matrix[current_vertex - 1]
 
-    if not visited_bool[vertex_index]:
+    if not visited_bool[current_vertex - 1]:
         # print("Odwiedzenie ", current_vertex, ", odwiedzone: ", visited)
-        visited_bool[vertex_index] = True
+        visited_bool[current_vertex - 1] = True
         visited.append(current_vertex)
         stack.push(current_vertex)
 
-    for i in connections:
-        if i in vertexes_list:
-            connection_index = vertexes_list.index(i)
-        else:
-            continue
-        if i != current_vertex - 1 and not visited_bool[connection_index]:
-            return dfs_components(i + 1, adj_list, stack, visited, visited_bool, vertexes_list)
+    for i in range(len(connections)):
+        if i != current_vertex - 1 and connections[i] != 0 and not visited_bool[i]:
+            return dfs_components(i + 1, matrix, stack, visited, visited_bool)
     stack.pop()
 
     if stack.is_empty():
         return visited
 
-    return dfs_components(stack.last_element(), adj_list, stack, visited, visited_bool, vertexes_list)
+    return dfs_components(stack.last_element(), matrix, stack, visited, visited_bool)
 
 
 def euler_cycle(graph, initial_vertex=1):
-    size = graph.get_size()
-    adj_list = graph.get_adjacency_list()
+    size = graph.getSize()
+    matrix = graph.getAdjacencyMatrix()
     initial_vertex -= 1
+    vertexes_numbers = graph.getVertexesList()
+    print(vertexes_numbers)
 
-    if not graph.all_vertexes_even_degree():
-        return
 
-    print("Wszystkie wierzchołki są parzystego stopnia")
+    # if not graph.areAllVertexesEvenDegree():
+    #     return
 
-    copy_adjList = [x[:] for x in adj_list]
-    copy_graph = copy.copy(graph)
-    print_list(copy_graph)
     answer = []
-    fleury(initial_vertex, copy_graph, answer)
-    fleury(1, copy_graph, answer)
-    fleury(1, copy_graph, answer)
-    fleury(2, copy_graph, answer)
-    fleury(3, copy_graph, answer)
-    fleury(4, copy_graph, answer)
-    fleury(5, copy_graph, answer)
-    fleury(3, copy_graph, answer)
+
+    fleury(0, matrix, graph, answer)
+    fleury(1, matrix, graph, answer)
+    fleury(3, matrix, graph, answer)
+    fleury(3, matrix, graph, answer)
+    fleury(4, matrix, graph, answer)
+
+
     print(answer)
     return
 
-def fleury(current_vertex, graph, answer):
-    adj_list = graph.get_adjacency_list()
-    vertexes_list = graph.get_vertexes_list()
-    current_vertex_index = vertexes_list.index(current_vertex)
+def fleury(current_vertex, matrix, graph, answer):
 
-    connections = adj_list[current_vertex_index]
-    vertex_degree = get_vertex_degree(current_vertex_index, connections)
-    print(vertex_degree)
+    print('current_vertex: ', current_vertex)
 
-    print("Aktualny wierzchołek: ", current_vertex, " Indeks aktualnego wierzchołka: ", current_vertex_index)
-    print_list(graph)
+    vertexes_list = graph.getVertexesList()
+    print('vertexes_list: ', vertexes_list)
 
-    if is_loop(current_vertex_index, connections):
-        print("Posiada pętlę")
-        graph.remove_one_edge(current_vertex_index, current_vertex)
-        print_list(graph)
-        answer.append([current_vertex + 1, current_vertex + 1])
-        return
+    vertex_index = vertexes_list.index(current_vertex)
+    print("vertex_index: ", vertex_index)
 
-    if vertex_degree > 1 and not is_loop(current_vertex_index, connections):
-        print("Wielu sąsiadow, brak petli")
-        for value in connections:
-            if value in vertexes_list:
-                value_index = vertexes_list.index(value)
-            else:
-                continue
-            new_copy_graph = copy.deepcopy(graph)
-            new_copy_graph.remove_one_edge(current_vertex_index, value)
-            new_copy_graph.remove_one_edge(value_index, current_vertex)
+    vertex_connections = matrix[vertex_index]
+    print('vertexes_connections: ', vertex_connections)
 
-            if is_connected(new_copy_graph):
-                print("Znaleziono krawędz ", current_vertex, ", ", value)
-                answer.append([current_vertex + 1, value + 1])
-                graph.remove_one_edge(current_vertex_index, value)
-                graph.remove_one_edge(value_index, current_vertex)
-                print_list(graph)
-                return
+    vertex_degree = get_vertex_degree(vertex_index, vertex_connections)
+    print("vertex_degree: ", vertex_degree)
 
-    if vertex_degree == 1:
-        connection = connections[0]
-        answer.append([current_vertex + 1, connection + 1])
-        vertexes_list = graph.get_vertexes_list()
-        print(vertexes_list)
-        print(current_vertex_index)
+    if is_loop(vertex_index, vertex_connections):
+        answer.append([current_vertex, current_vertex])
+        graph.removeEdge(vertex_index, vertex_index)
+        print("Pętla")
+        print_matrix(graph)
 
-        graph.remove_vertex(current_vertex)
-        print_list(graph)
-        return
+    elif vertex_degree == 1:
+        for index, value in enumerate(vertex_connections):
+            if value == 1:
+                connection = index
+                answer.append([current_vertex, connection])
+        graph.removeVertex(current_vertex)
 
-    print(answer)
+    else:
+        for index, value in enumerate(vertex_connections):
+            if value == 1:
+                neighbour = index
+                copy_graph = copy.deepcopy(graph)
+                copy_graph.removeEdge(vertex_index, neighbour)
+                print("Usuwanie ", current_vertex, neighbour)
+                if is_connected(copy_graph):
+                    answer.append([current_vertex, neighbour])
+                    graph.removeEdge(vertex_index, neighbour)
+                    break
+
     return answer
 
 
 def get_vertex_degree(vertex, connections):
     degree = 0
-    for value in connections:
-        if value == vertex:
-            degree += 2
-        else:
-            degree += 1
+    for index, elem in enumerate(connections):
+        if elem == 1:
+            if index == vertex:
+                degree += 2
+            else:
+                degree += 1
     return degree
 
 
 def is_loop(vertex, connections):
-    for value in connections:
-        if value == vertex:
+    for index, elem in enumerate(connections):
+        if index == vertex and elem == 1:
             return True
     return False
 
 
-def print_list(graph):
-    adj_list = graph.get_adjacency_list()
-    vertexes_nums = graph.get_vertexes_list()
-
-    print("\n\nLista sąsiedztwa:\n")
-    for index, row in enumerate(adj_list):
-        print(vertexes_nums[index] + 1, end=': ')
+def print_matrix(graph):
+    matrix = graph.getAdjacencyMatrix()
+    print("\nMacierz sąsiedztwa:\n")
+    for index, row in enumerate(matrix):
+        print(index, end=': ')
         for value in row:
-            print('{0:5}'.format(value + 1), end=' ')
+            print('{0:5}'.format(value), end=' ')
         print()
     return
