@@ -1,100 +1,105 @@
-class Multigraph:
+class MultiGraph:
     def __init__(self, size):
         self.size = size
-        self.adj_list = [[] for i in range(size)]
-        self.vertexes_numbers = [i for i in range(size)]
-        self.last_vertex_removed = 0
+        self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
+        self.vertexes_nums = [i for i in range(size)]
 
-    def add_edge(self, v1, v2):
-        if self.is_vertex_invalid(v1) or self.is_vertex_invalid(v2):
+    def buildFromMatrix(self, matrix):
+        self.adjMatrix = matrix
+        return self
+
+    def addEdge(self, v1, v2):
+        if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
             return
         if v1 == v2:
-            self.adj_list[v1].append(v2)
-        else:
-            self.adj_list[v1].append(v2)
-            self.adj_list[v2].append(v1)
+            self.adjMatrix[v1][v2] = 1
+            return
+        self.adjMatrix[v1][v2] += 1
+        self.adjMatrix[v2][v1] += 1
         return
 
-    def remove_edge(self, v1, v2):
-        if self.is_vertex_invalid(v1) or self.is_vertex_invalid(v2):
+    def removeEdge(self, v1, v2):
+        if self.isVertexInvalid(v1) or self.isVertexInvalid(v2):
             return
-        if not self.does_edge_exist(v1, v2):
-            print("Podana krawędź nie istnieje")
-            return
-        if v1 == v2:
-            self.adj_list[v1].remove(v2)
-        else:
-            self.adj_list[v1].remove(v2)
-            self.adj_list[v2].remove(v1)
-        return
-
-    def remove_one_edge(self, v1, v2):
-        if self.is_vertex_invalid(v1) or self.is_vertex_invalid(v2):
-            return
-        if not self.does_edge_exist(v1, v2):
+        if not self.doesEdgeExist(v1, v2):
             print("Podana krawędź nie istnieje ", v1, v2)
+            print(self.adjMatrix)
             return
-        self.adj_list[v1].remove(v2)
+        if v1 == v2:
+            self.adjMatrix[v1][v2] = 0
+            return
+        self.adjMatrix[v1][v2] -= 1
+        self.adjMatrix[v2][v1] -= 1
         return
 
-    def add_vertex(self):
+    def addVertex(self):
         self.size += 1
-        self.adj_list.append([])
-        if self.last_vertex_removed >= self.size:
-            self.vertexes_numbers.append(self.last_vertex_removed + 1)
-        else:
-            self.vertexes_numbers.append(self.size)
+        for row in self.adjMatrix:
+            row.append(0)
+        self.adjMatrix.append([0 for i in range(self.size)])
+        self.vertexes_nums.append(self.vertexes_nums[-1] + 1)
         return
 
-    def remove_vertex(self, v):
-        print("Przekazany wierzchołek: ", v)
-        vertex_index = self.vertexes_numbers.index(v)
-        if self.is_vertex_invalid(v):
+    def removeVertex(self, v):
+        vertex_index = self.vertexes_nums.index(v)
+        if self.isVertexInvalid(vertex_index):
             return
-        if not self.does_vertex_exist(vertex_index):
-            return
-        self.remove_edges_associated_to_vertex(vertex_index)
-        del self.adj_list[vertex_index]
-        self.vertexes_numbers.remove(v)
-        self.last_vertex_removed = v
+        # self.removeEdgesAssociatedToVertex(v)
+        # self.removeRowFromMatrix(v)
+        # self.removeColumnFromMatrix(v)
+        # self.size -= 1
+        # self.vertexes_nums.remove(v)
+
+        self.removeEdgesAssociatedToVertex(vertex_index)
+        self.removeRowFromMatrix(vertex_index)
+        self.removeColumnFromMatrix(vertex_index)
+        self.size -= 1
+        self.vertexes_nums.remove(v)
         return
 
-    def remove_edges_associated_to_vertex(self, v):
-        for value in list(self.adj_list[v]):
-            self.remove_one_edge(self.vertexes_numbers.index(value), v)
+    def removeEdgesAssociatedToVertex(self, v):
+        for index in range(self.size):
+            if self.adjMatrix[v][index] != 0:
+                self.removeEdge(v, index)
 
-    def all_vertexes_even_degree(self):
-        for i in range(self.size):
-            vertex_degree = self.find_vertex_degree(i)
-            if vertex_degree % 2 != 0:
-                print("Wierzchołek ", i + 1, " nie jest parzystego stopnia. Połączenia: ")
-                for value in self.adj_list[i]:
-                    print('{0:5}'.format(value + 1), end=' ')
+    def removeRowFromMatrix(self, rowNum):
+        del self.adjMatrix[rowNum]
+
+    def removeColumnFromMatrix(self, colNum):
+        for row in self.adjMatrix:
+            del row[colNum]
+
+    def findVertexDegree(self, v):
+        degree = 0
+        for index in range(self.size):
+            if self.doesEdgeExist(v, index):
+                if index == v:
+                    degree += 2
+                else:
+                    degree += self.adjMatrix[v][index]
+        return degree
+
+    def areAllVertexesEvenDegree(self):
+        for vertex in range(self.size):
+            degree = self.findVertexDegree(vertex)
+            #print("Vertex: ", vertex, " deg: ", degree)
+            if degree % 2 != 0:
                 return False
         return True
 
-    def find_vertex_degree(self, v):
-        degree = 0
-        for vertex in  self.adj_list[v]:
-            if vertex == v:
-                degree += 2
-            else:
-                degree += 1
-        return degree
+    def getAdjacencyMatrix(self):
+        return self.adjMatrix
 
-    def does_vertex_exist(self, v):
-        if 0 <= v < self.get_size():
-            return True
-        print("Podany wierzchołek nie istnieje")
-        return False
+    def getSize(self):
+        return self.size
 
-    def does_edge_exist(self, v1, v2):
-        # print("v1: ", v1,", v2:  ", v2, " Lista: ", self.adj_list[v1])
-        if v2 in self.adj_list[v1]:
-            return True
-        return False
+    def getVertexesList(self):
+        return self.vertexes_nums
 
-    def is_vertex_invalid(self, v):
+    def getType(self):
+        return "weighted graph"
+
+    def isVertexInvalid(self, v):
         if not isinstance(v, int):
             print("Numery wierzchołków to liczby całkowite")
             return True
@@ -103,21 +108,16 @@ class Multigraph:
             return True
         return False
 
-
-    def get_size(self):
-        return self.size
-
-    def get_adjacency_list(self):
-        return self.adj_list
-
-    def get_vertexes_list(self):
-        return self.vertexes_numbers
+    def doesEdgeExist(self, v1, v2):
+        if self.adjMatrix[v1][v2] != 0:
+            return True
+        return False
 
     def toString(self):
-        print("\n\nLista sąsiedztwa:\n")
-        for index, row in enumerate(self.adj_list):
-            print(self.vertexes_numbers[index] + 1, end=': ')
+        print("\n\nMacierz sąsiedztwa:\n")
+        for row in self.adjMatrix:
             for value in row:
-                print('{0:5}'.format(value + 1), end=' ')
+                print('{0:5}'.format(value), end=' ')
             print()
+        print("Rozmiar macierzy: [ %d x %d ]\n" % (len(self.adjMatrix), len(self.adjMatrix[0])))
         return

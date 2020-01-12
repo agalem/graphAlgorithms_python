@@ -1,7 +1,6 @@
 import copy
 from classes.stack import Stack
-from classes.multigraph import Multigraph
-from classes.weightedGraph import WeightedGraph
+from classes.multigraph import MultiGraph
 
 def build_graph_from_file(path):
     file = open(path, "r")
@@ -16,7 +15,7 @@ def build_graph_from_file(path):
         print("Podano niewłaściwą liczbę krawędzi - %d" % len(edges))
         return
 
-    graph = WeightedGraph(graph_size)
+    graph = MultiGraph(graph_size)
 
     for edge in edges:
         edge = edge.split()
@@ -89,20 +88,28 @@ def euler_cycle(graph, initial_vertex=1):
     vertexes_numbers = graph.getVertexesList()
     print(vertexes_numbers)
 
-
-    # if not graph.areAllVertexesEvenDegree():
-    #     return
+    if not graph.areAllVertexesEvenDegree():
+        print("Nie wszystkie wierzchołki grafu są parzystego stopnia")
+        return
 
     answer = []
+    visited_vertexes = []
 
-    fleury(0, matrix, graph, answer)
+    fleury(initial_vertex, matrix, graph, answer, visited_vertexes)
 
-    print(answer)
-    return
+    if len(visited_vertexes) != size:
+        print("Podany graf nie ma cyklu Eulera")
+        print("Znalezione połączenia: ", answer)
+        return
 
-def fleury(current_vertex, matrix, graph, answer):
+    print("\nCykl Eulera, krawędzie: ")
+    return answer
+
+def fleury(current_vertex, matrix, graph, answer, visited_vertexes):
 
     print('current_vertex: ', current_vertex)
+    if current_vertex not in visited_vertexes:
+        visited_vertexes.append(current_vertex)
 
     vertexes_list = graph.getVertexesList()
     print('vertexes_list: ', vertexes_list)
@@ -120,39 +127,39 @@ def fleury(current_vertex, matrix, graph, answer):
     if vertex_degree > 0:
 
         if is_loop(vertex_index, vertex_connections):
-            answer.append([current_vertex, current_vertex])
+            answer.append([current_vertex + 1, current_vertex + 1])
             graph.removeEdge(vertex_index, vertex_index)
             print("Pętla")
             print_matrix(graph)
-            return fleury(current_vertex, matrix, graph, answer)
+            return fleury(current_vertex, matrix, graph, answer, visited_vertexes)
 
         elif vertex_degree == 1:
             connection = None
             for index, value in enumerate(vertex_connections):
                 if value == 1:
                     connection = vertexes_list[index]
-                    print("Index usuwanego: ", index, " z listy: ", connection)
-                    answer.append([current_vertex, connection])
+                    # print("Index usuwanego: ", index, " z listy: ", connection)
+                    answer.append([current_vertex + 1, connection + 1])
             print("Usuwanie wierzchołka ", current_vertex)
             graph.removeVertex(current_vertex)
             if connection is not None:
-                print("Przekazywana wartość: ", connection)
-                return fleury(connection, matrix, graph, answer)
+                # print("Przekazywana wartość: ", connection)
+                return fleury(connection, matrix, graph, answer, visited_vertexes)
             else:
                 print("Błąd -> brak połączeń od wierzchołka ", current_vertex + 1)
                 return
 
         else:
             for index, value in enumerate(vertex_connections):
-                if value == 1:
+                if value >= 1:
                     neighbour = index
                     copy_graph = copy.deepcopy(graph)
-                    copy_graph.removeEdge(vertex_index, vertexes_list[neighbour])
+                    copy_graph.removeEdge(vertex_index, neighbour)
                     print("Usuwanie ", current_vertex, vertexes_list[neighbour])
                     if is_connected(copy_graph):
-                        answer.append([current_vertex, vertexes_list[neighbour]])
-                        graph.removeEdge(vertex_index, vertexes_list[neighbour])
-                        return fleury(vertexes_list[neighbour], matrix, graph, answer)
+                        answer.append([current_vertex + 1, vertexes_list[neighbour] + 1])
+                        graph.removeEdge(vertex_index, neighbour)
+                        return fleury(vertexes_list[neighbour], matrix, graph, answer, visited_vertexes)
 
     return answer
 
@@ -160,11 +167,11 @@ def fleury(current_vertex, matrix, graph, answer):
 def get_vertex_degree(vertex, connections):
     degree = 0
     for index, elem in enumerate(connections):
-        if elem == 1:
+        if elem > 0:
             if index == vertex:
                 degree += 2
             else:
-                degree += 1
+                degree += elem
     return degree
 
 
