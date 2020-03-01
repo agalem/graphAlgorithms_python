@@ -31,5 +31,5 @@ W katalogach znajdują się podane algorytmy grafowe
 ## Zad6
 - Algorytm Fleury'ego znajdowania w grafie cyklu Eulera
 
-## Zad6
+## Zad7
 - Sprawdzenie planarności grafu wykorzystując pakiet 'networkx'
