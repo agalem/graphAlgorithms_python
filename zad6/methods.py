@@ -15,7 +15,7 @@ def build_graph_from_file(path):
         print("Podano niewłaściwą liczbę krawędzi - %d" % len(edges))
         return
 
-    graph = MultiGraph(graph_size)
+    graph = MultiGraph(graph_size, edges_size)
 
     for edge in edges:
         edge = edge.split()
@@ -97,12 +97,14 @@ def euler_cycle(graph, initial_vertex=1):
 
     fleury(initial_vertex, matrix, graph, answer, visited_vertexes)
 
-    if len(visited_vertexes) != size:
+    if graph.getEdgesSize() != len(answer):
         print("Podany graf nie ma cyklu Eulera")
-        print("Znalezione połączenia: ", answer)
+        #print("Znalezione połączenia: ", answer)
         return
 
     print("\nCykl Eulera, krawędzie: ")
+    #print(answer)
+
     return answer
 
 def fleury(current_vertex, matrix, graph, answer, visited_vertexes):

@@ -17,7 +17,7 @@ def checkGraphSeries(series):
     amountToDecrease = series[0]
     seriesToCheck = series[1:]
     if len(seriesToCheck) < amountToDecrease:
-        print("długośc")
+        print("Nie jest to ciąg grafowy")
         return False
     else:
         newSeries = modifyListElements(seriesToCheck, amountToDecrease)

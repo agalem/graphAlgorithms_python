@@ -41,10 +41,13 @@ def check_planarity(graph):
     is_planar = checking_output[0]
 
     if is_planar:
+        print("\nGraf jest planarny\n\n")
+
         pos = nx.planar_layout(graph)
 
         nx.draw(graph, pos=pos, with_labels=True)
         plt.show()
+
     else:
         print("Graf nie jest planarny")
         return False

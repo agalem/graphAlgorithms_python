@@ -273,6 +273,7 @@ def find_max_match(graph):
 
     print("\n")
     print("Maksymalne skojarzenie: ")
+    print(sorted_max_matching_edges)
 
     return sorted_max_matching_edges
 

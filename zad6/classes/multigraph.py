@@ -1,6 +1,7 @@
 class MultiGraph:
-    def __init__(self, size):
+    def __init__(self, size, edgesSize):
         self.size = size
+        self.edgesSize = edgesSize
         self.adjMatrix = [[0 for i in range(size)] for i in range(size)]
         self.vertexes_nums = [i for i in range(size)]
 
@@ -92,6 +93,9 @@ class MultiGraph:
 
     def getSize(self):
         return self.size
+
+    def getEdgesSize(self):
+        return self.edgesSize
 
     def getVertexesList(self):
         return self.vertexes_nums

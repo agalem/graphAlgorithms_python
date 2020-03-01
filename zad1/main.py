@@ -15,7 +15,7 @@ def main():
 
     hasC3Cycle(g.getAdjacencyMatrix())
     hasC3CycleByMatrixMultipication(g.getAdjacencyMatrix())
-    isGraphSeries([4,4,4,4])
+    print(isGraphSeries([4,4,4,4]))
 
 
 if __name__ == '__main__':
